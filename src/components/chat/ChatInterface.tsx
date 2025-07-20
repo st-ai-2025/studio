@@ -120,7 +120,12 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
         }
     } catch (error) {
         console.error("Error sending message:", error);
-        toast({ variant: "destructive", title: "Error", description: "Failed to send message. Please check your connection." });
+        const errorMessage = (error instanceof Error) ? error.message : "An unknown error occurred.";
+        toast({ 
+            variant: "destructive", 
+            title: "Failed to send message", 
+            description: `Error: ${errorMessage}. Please check the console for details.` 
+        });
         // We don't revert the user's message from the UI to avoid confusion.
     } finally {
         setIsResponding(false);
