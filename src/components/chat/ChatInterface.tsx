@@ -51,35 +51,14 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
-  
-  // Effect for listening to Firestore for chat messages and generating introduction
+
+  // Effect for listening to Firestore for chat messages
   useEffect(() => {
     if (!user) return;
 
     if (bypassAuth) {
-        // In bypass mode, handle intro and loading state separately.
-        setIsUiLoading(true);
-        generateContextAwareIntroduction({ surveyResponses: JSON.stringify(surveyData) })
-          .then(res => {
-            if (res.introduction) {
-              const introMsg = {
-                id: 'intro-1',
-                content: res.introduction,
-                role: 'assistant' as const,
-                timestamp: new Date() as any,
-                userId: user.uid,
-              };
-              setMessages([introMsg]);
-            }
-          })
-          .catch(error => {
-            console.error("Error generating introduction in bypass mode:", error);
-            toast({ variant: "destructive", title: "Error", description: "Failed to start conversation." });
-          })
-          .finally(() => {
-            setIsUiLoading(false);
-          });
-        return;
+      setIsUiLoading(false);
+      return;
     }
 
     const q = query(
@@ -88,46 +67,57 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
       orderBy("timestamp", "asc")
     );
 
-    const unsubscribe = onSnapshot(q, 
-      async (querySnapshot) => {
+    const unsubscribe = onSnapshot(q,
+      (querySnapshot) => {
         const msgs: Message[] = [];
         querySnapshot.forEach((doc) => {
           msgs.push({ id: doc.id, ...doc.data() } as Message);
         });
         setMessages(msgs);
-
-        // If the snapshot is empty, it means no chat history exists. Generate introduction.
-        if (querySnapshot.empty && !isResponding) {
-          setIsResponding(true);
-          try {
-            const res = await generateContextAwareIntroduction({ surveyResponses: JSON.stringify(surveyData) });
-            if (res.introduction) {
-              await addDoc(collection(db, "chats"), {
-                content: res.introduction,
-                role: 'assistant',
-                timestamp: serverTimestamp(),
-                userId: user.uid,
-              });
-            }
-          } catch (error) {
-            console.error("Error generating introduction:", error);
-            toast({ variant: "destructive", title: "Error", description: "Failed to start conversation." });
-          } finally {
-            setIsResponding(false);
-          }
-        }
         setIsUiLoading(false);
-      }, 
+      },
       (error) => {
         console.error("Error fetching chat history:", error);
-        toast({ variant: "destructive", title: "Error", description: "Could not load chat history. Please check permissions." });
+        toast({ variant: "destructive", title: "Error", description: "Could not load chat history. Check permissions." });
         setIsUiLoading(false);
       }
     );
 
     return () => unsubscribe();
-  // The dependency array is stable, ensuring this hook runs only when the user changes.
-  }, [user, surveyData, bypassAuth, toast]);
+  }, [user, bypassAuth, toast]);
+
+  // Effect for generating introduction if no messages exist
+  useEffect(() => {
+    if (!user || isUiLoading || messages.length > 0 || isResponding) return;
+
+    const generateIntro = async () => {
+      setIsResponding(true);
+      try {
+        const res = await generateContextAwareIntroduction({ surveyResponses: JSON.stringify(surveyData) });
+        if (res.introduction) {
+          const introMsg = {
+            content: res.introduction,
+            role: 'assistant' as const,
+            timestamp: serverTimestamp(),
+            userId: user.uid,
+          };
+          
+          if (bypassAuth) {
+            setMessages([{...introMsg, id: 'intro-1', timestamp: new Date() as any}]);
+          } else {
+            await addDoc(collection(db, "chats"), introMsg);
+          }
+        }
+      } catch (error) {
+        console.error("Error generating introduction:", error);
+        toast({ variant: "destructive", title: "Error", description: "Failed to start conversation." });
+      } finally {
+        setIsResponding(false);
+      }
+    };
+
+    generateIntro();
+  }, [user, isUiLoading, messages.length, surveyData, bypassAuth, toast]);
 
 
   const handleSend = async () => {
@@ -246,7 +236,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
             {messages.map((msg, index) => (
               <ChatMessage key={msg.id || index} message={msg} />
             ))}
-            {isResponding && messages.length > 0 && (
+            {isResponding && (
                 <div className="flex items-start gap-4">
                     <Avatar className="h-10 w-10 border">
                         <AvatarFallback><Bot className="h-5 w-5"/></AvatarFallback>
