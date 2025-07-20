@@ -64,7 +64,6 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
             userId: user.uid,
           };
           setMessages([introMsg]);
-          // We won't save the intro message to Firestore to avoid read-loops.
         }
       } catch (error) {
         console.error("Error generating introduction:", error);
@@ -98,7 +97,6 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
     setIsResponding(true);
 
     try {
-        // Note: We are writing to a user-specific collection now
         const userChatsCollection = collection(db, "users", user.uid, "chats");
         
         await addDoc(userChatsCollection, {
@@ -123,8 +121,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
     } catch (error) {
         console.error("Error sending message:", error);
         toast({ variant: "destructive", title: "Error", description: "Failed to send message. Please check your connection." });
-        setMessages(prev => prev.slice(0, -1));
-        setInput(userMessageContent);
+        // We don't revert the user's message from the UI to avoid confusion.
     } finally {
         setIsResponding(false);
     }

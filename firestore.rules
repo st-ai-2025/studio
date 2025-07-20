@@ -3,11 +3,12 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Allow users to create their own user document
     match /users/{userId} {
-      allow create: if request.auth.uid == userId;
-      // Allow users to read, update and write to subcollections of their own user document
-      match /{document=**} {
+      // Allow a user to create, read, and update their own user document.
+      allow create, read, update: if request.auth.uid == userId;
+
+      // Allow a user to read and write to their own 'chats' subcollection.
+      match /chats/{chatId} {
         allow read, write: if request.auth.uid == userId;
       }
     }
