@@ -50,11 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        // We use a small timeout to ensure the auth state is fully propagated
-        // before attempting a database write. This can prevent race conditions.
-        setTimeout(() => {
-          createUserProfile(user);
-        }, 1);
+        createUserProfile(user);
       }
       setUser(user);
       setLoading(false);
