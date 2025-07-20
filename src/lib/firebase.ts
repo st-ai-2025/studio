@@ -1,6 +1,9 @@
+
 import { getApp, getApps, initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, connectAuthEmulator } from "firebase/auth";
-import { getFirestore, connectFirestoreEmulator } from "firebase/firestore";
+import { getFirestore, connectFirestoreEmulator, doc, setDoc, serverTimestamp } from "firebase/firestore";
+import type { User } from "firebase/auth";
+
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -16,6 +19,23 @@ const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
 const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
+
+export const createUserProfile = async (user: User) => {
+  if (!user) return;
+  const userRef = doc(db, 'users', user.uid);
+  try {
+    await setDoc(userRef, {
+      uid: user.uid,
+      email: user.email,
+      displayName: user.displayName,
+      photoURL: user.photoURL,
+      lastLogin: serverTimestamp(),
+    }, { merge: true }); // Use merge: true to avoid overwriting data if it already exists
+  } catch (error) {
+    console.error("Error creating user profile:", error);
+  }
+};
+
 
 // If you want to use the local emulators, you can uncomment the following lines
 // and set the environment variables in a .env.local file.
