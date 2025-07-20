@@ -63,20 +63,22 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
             id: `assistant-${Date.now()}`,
             content: res.introduction,
             role: 'assistant',
-            timestamp: new Date() as any, // Using local date for local state
+            timestamp: new Date() as any, 
             userId: user.uid,
           };
           setMessages([introMsg]);
 
-          // Save to Firestore for logging, but don't read from it
           await addDoc(collection(db, "chats"), {
-            ...introMsg,
-            timestamp: serverTimestamp(), // Use server timestamp for DB
+            content: introMsg.content,
+            role: introMsg.role,
+            timestamp: serverTimestamp(),
+            userId: introMsg.userId,
+            surveyData: surveyData,
           });
         }
       } catch (error) {
         console.error("Error generating introduction:", error);
-        toast({ variant: "destructive", title: "Error", description: "Failed to start conversation." });
+        toast({ variant: "destructive", title: "Error", description: "Failed to start conversation. Please check your connection or permissions." });
       } finally {
         setIsResponding(false);
       }
@@ -88,7 +90,10 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
 
 
   const handleSend = async () => {
-    if (input.trim() === "" || !user) return;
+    if (input.trim() === "" || !user) {
+        toast({ variant: "destructive", title: "Error", description: "You must be logged in to send a message." });
+        return;
+    }
 
     const userMessageContent = input;
     setInput("");
@@ -105,13 +110,13 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
     setIsResponding(true);
     
     try {
-        // Save user message to Firestore
-        await addDoc(collection(db, "chats"), {
+        const userMessageForDb = {
             content: userMessage.content,
             role: userMessage.role,
             timestamp: serverTimestamp(),
             userId: userMessage.userId
-        });
+        };
+        await addDoc(collection(db, "chats"), userMessageForDb);
         
         const res = await personalizedChat({ surveyResponses: surveyData, userMessage: userMessageContent });
         
@@ -126,17 +131,18 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
 
             setMessages(prev => [...prev, assistantMessage]);
             
-            // Save assistant message to Firestore
-            await addDoc(collection(db, "chats"), {
+            const assistantMessageForDb = {
                 content: assistantMessage.content,
                 role: assistantMessage.role,
                 timestamp: serverTimestamp(),
-                userId: assistantMessage.userId
-            });
+                userId: assistantMessage.userId,
+            };
+            await addDoc(collection(db, "chats"), assistantMessageForDb);
         }
     } catch (error) {
         console.error("Error sending message:", error);
-        toast({ variant: "destructive", title: "Error", description: "Failed to send message." });
+        toast({ variant: "destructive", title: "Error", description: "Failed to send message. Please check permissions." });
+        // Revert local state update on failure
         setMessages(prev => prev.filter(m => m.id !== userMessage.id));
         setInput(userMessageContent);
     } finally {
