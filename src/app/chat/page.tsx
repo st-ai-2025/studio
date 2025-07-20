@@ -18,7 +18,20 @@ export default function ChatPage() {
     }
   }, [user, loading, router]);
 
-  // The code that was here to load from sessionStorage has been removed.
+  useEffect(() => {
+    // Attempt to load survey data from sessionStorage when the component mounts
+    // This allows returning to the chat after a page refresh without re-doing the survey
+    try {
+      const savedData = sessionStorage.getItem('surveyData');
+      if (savedData) {
+        setSurveyData(JSON.parse(savedData));
+      }
+    } catch (error) {
+        console.error("Could not parse survey data from session storage", error);
+        sessionStorage.removeItem('surveyData');
+    }
+  }, []);
+
 
   if (loading || !user) {
     return (
