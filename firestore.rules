@@ -1,12 +1,11 @@
+
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /chats/{chatId} {
-      // Allow users to create messages if the message's userId matches their own uid.
+    match /chats/{document=**} {
+      allow read, list: if request.auth != null && request.auth.uid == resource.data.userId;
       allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
-      // Users should not be able to read, update or delete messages in this simplified flow.
-      allow read, update, delete: if false;
     }
   }
 }
