@@ -34,7 +34,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
   const { toast } = useToast();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [isUiLoading, setIsUiLoading] = useState(true);
   const [isResponding, setIsResponding] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const bypassAuth = process.env.NEXT_PUBLIC_BYPASS_AUTH === 'true';
@@ -51,17 +51,35 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
-
-  // Effect for listening to Firestore for chat messages
+  
+  // Effect for listening to Firestore for chat messages and generating introduction
   useEffect(() => {
     if (!user) return;
-    
-    setLoading(true);
 
     if (bypassAuth) {
-        // In bypass mode, we handle the intro separately.
-        setLoading(false);
-        return; 
+        // In bypass mode, handle intro and loading state separately.
+        setIsUiLoading(true);
+        generateContextAwareIntroduction({ surveyResponses: JSON.stringify(surveyData) })
+          .then(res => {
+            if (res.introduction) {
+              const introMsg = {
+                id: 'intro-1',
+                content: res.introduction,
+                role: 'assistant' as const,
+                timestamp: new Date() as any,
+                userId: user.uid,
+              };
+              setMessages([introMsg]);
+            }
+          })
+          .catch(error => {
+            console.error("Error generating introduction in bypass mode:", error);
+            toast({ variant: "destructive", title: "Error", description: "Failed to start conversation." });
+          })
+          .finally(() => {
+            setIsUiLoading(false);
+          });
+        return;
     }
 
     const q = query(
@@ -71,62 +89,45 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
     );
 
     const unsubscribe = onSnapshot(q, 
-      (querySnapshot) => {
+      async (querySnapshot) => {
         const msgs: Message[] = [];
         querySnapshot.forEach((doc) => {
           msgs.push({ id: doc.id, ...doc.data() } as Message);
         });
         setMessages(msgs);
-        setLoading(false);
+
+        // If the snapshot is empty, it means no chat history exists. Generate introduction.
+        if (querySnapshot.empty && !isResponding) {
+          setIsResponding(true);
+          try {
+            const res = await generateContextAwareIntroduction({ surveyResponses: JSON.stringify(surveyData) });
+            if (res.introduction) {
+              await addDoc(collection(db, "chats"), {
+                content: res.introduction,
+                role: 'assistant',
+                timestamp: serverTimestamp(),
+                userId: user.uid,
+              });
+            }
+          } catch (error) {
+            console.error("Error generating introduction:", error);
+            toast({ variant: "destructive", title: "Error", description: "Failed to start conversation." });
+          } finally {
+            setIsResponding(false);
+          }
+        }
+        setIsUiLoading(false);
       }, 
       (error) => {
         console.error("Error fetching chat history:", error);
-        toast({ variant: "destructive", title: "Error", description: "Could not load chat history. Check Firestore security rules and index configuration." });
-        setLoading(false);
+        toast({ variant: "destructive", title: "Error", description: "Could not load chat history. Please check permissions." });
+        setIsUiLoading(false);
       }
     );
 
     return () => unsubscribe();
-  }, [user, bypassAuth, toast]);
-
-
-  // Effect for generating the initial introduction message
-  useEffect(() => {
-    // Only run if not loading, user is present, and there are no messages.
-    if (!loading && user && messages.length === 0) {
-      setIsResponding(true);
-
-      const createIntroduction = async () => {
-        try {
-          const res = await generateContextAwareIntroduction({ surveyResponses: JSON.stringify(surveyData) });
-          if (res.introduction) {
-            const introMsg = {
-              content: res.introduction,
-              role: 'assistant' as const,
-              timestamp: serverTimestamp(),
-              userId: user.uid,
-            };
-            
-            if (bypassAuth) {
-                // In bypass, just update state directly
-                setMessages([{...introMsg, id: 'intro-1', timestamp: new Date() as any}]);
-            } else {
-                // In normal mode, add to Firestore, listener will update state
-                await addDoc(collection(db, "chats"), introMsg);
-            }
-          }
-        } catch (error) {
-          console.error("Error generating introduction:", error);
-          toast({ variant: "destructive", title: "Error", description: "Failed to start conversation." });
-        } finally {
-          setIsResponding(false);
-        }
-      };
-      
-      createIntroduction();
-    }
-    // This should only depend on these stable values.
-  }, [loading, user, messages.length, surveyData, toast, bypassAuth]);
+  // The dependency array is stable, ensuring this hook runs only when the user changes.
+  }, [user, surveyData, bypassAuth, toast]);
 
 
   const handleSend = async () => {
@@ -189,7 +190,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
     }
   };
 
-  if (loading && messages.length === 0) {
+  if (isUiLoading) {
     return (
         <div className="flex h-screen flex-col">
             <header className="flex h-16 shrink-0 items-center justify-between border-b px-4">
@@ -197,9 +198,15 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
                 <Skeleton className="h-10 w-10 rounded-full" />
             </header>
             <main className="flex-1 p-4 space-y-4">
-                <Skeleton className="h-16 w-3/4 self-start rounded-xl" />
-                <Skeleton className="h-16 w-3/4 self-end rounded-xl" />
-                <Skeleton className="h-16 w-2/4 self-start rounded-xl" />
+                <div className="flex items-start gap-4">
+                    <Avatar className="h-10 w-10 border">
+                        <AvatarFallback><Bot className="h-5 w-5"/></AvatarFallback>
+                    </Avatar>
+                    <div className="grid gap-1">
+                        <Skeleton className="h-5 w-24" />
+                        <Skeleton className="h-12 w-64" />
+                    </div>
+                </div>
             </main>
             <footer className="shrink-0 border-t p-4">
                  <Skeleton className="h-24 w-full" />
@@ -239,7 +246,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
             {messages.map((msg, index) => (
               <ChatMessage key={msg.id || index} message={msg} />
             ))}
-            {isResponding && (
+            {isResponding && messages.length > 0 && (
                 <div className="flex items-start gap-4">
                     <Avatar className="h-10 w-10 border">
                         <AvatarFallback><Bot className="h-5 w-5"/></AvatarFallback>
