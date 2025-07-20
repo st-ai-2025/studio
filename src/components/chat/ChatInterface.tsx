@@ -21,7 +21,7 @@ import type { Message } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "../ui/skeleton";
 import { Logo } from "../Logo";
-import { db } from "@/lib/firebase";
+import { db, createUserProfile } from "@/lib/firebase";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 
 type ChatInterfaceProps = {
@@ -35,6 +35,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
   const [messages, setMessages] = useState<Omit<Message, 'id' | 'timestamp'>[]>([]);
   const [input, setInput] = useState("");
   const [isResponding, setIsResponding] = useState(false);
+  const [isFirstMessage, setIsFirstMessage] = useState(true);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -97,6 +98,11 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
     setIsResponding(true);
 
     try {
+        if (isFirstMessage) {
+            await createUserProfile(user);
+            setIsFirstMessage(false);
+        }
+
         const userChatsCollection = collection(db, "users", user.uid, "chats");
         
         await addDoc(userChatsCollection, {
@@ -123,9 +129,8 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
         toast({ 
             variant: "destructive", 
             title: "Failed to send message", 
-            description: "Please check your connection."
+            description: "There was an error sending your message. Please check the console for details."
         });
-        // We don't revert the user's message from the UI to avoid confusion.
     } finally {
         setIsResponding(false);
     }

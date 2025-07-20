@@ -3,7 +3,7 @@
 
 import { createContext, useEffect, useState, type ReactNode } from "react";
 import { onAuthStateChanged, signInWithPopup, signOut as firebaseSignOut, GoogleAuthProvider } from "firebase/auth";
-import { auth, googleProvider, createUserProfile } from "@/lib/firebase";
+import { auth, googleProvider } from "@/lib/firebase";
 import type { User } from "@/types";
 
 interface AuthContextType {
@@ -49,9 +49,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        createUserProfile(user);
-      }
       setUser(user);
       setLoading(false);
     });
@@ -66,11 +63,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     setLoading(true);
     try {
-      // The onAuthStateChanged listener will handle the user state update and profile creation.
       await signInWithPopup(auth, googleProvider);
     } catch (error: any) {
       if (error.code === 'auth/popup-closed-by-user') {
-        // This is a common user action, not an error to log.
         setLoading(false);
       } else {
         console.error("Error signing in with Google", error);
@@ -86,7 +81,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     try {
       await firebaseSignOut(auth);
-      // The onAuthStateChanged listener will set the user to null.
     } catch (error) {
       console.error("Error signing out", error);
     }
