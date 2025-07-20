@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useEffect, useState, type ReactNode } from "react";
-import { onAuthStateChanged, signInWithPopup, signOut as firebaseSignOut } from "firebase/auth";
+import { onAuthStateChanged, signInWithPopup, signOut as firebaseSignOut, GoogleAuthProvider } from "firebase/auth";
 import { auth, googleProvider } from "@/lib/firebase";
 import type { User } from "@/types";
 
@@ -56,24 +56,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signInWithGoogle = async () => {
     if (bypassAuth) {
-      setUser(mockUser); // Ensure mock user is set on "sign in"
+      setUser(mockUser);
+      setLoading(false);
       return;
     }
     setLoading(true);
     try {
-      const result = await signInWithPopup(auth, googleProvider);
       // The onAuthStateChanged listener will handle the user state update.
-      // We can also setUser here if needed, but the listener is generally sufficient.
-      // setUser(result.user);
+      await signInWithPopup(auth, googleProvider);
     } catch (error: any) {
-      // Don't log "popup-closed-by-user" as a console error as it's a common user action
-      if (error.code !== 'auth/popup-closed-by-user') {
+      if (error.code === 'auth/popup-closed-by-user') {
+        // This is a common user action, not an error to log.
+        setLoading(false);
+      } else {
         console.error("Error signing in with Google", error);
+        setLoading(false);
       }
-    } finally {
-      // The onAuthStateChanged listener will set loading to false.
-      // We can leave this out to avoid flickering.
-      // setLoading(false);
     }
   };
 
@@ -84,6 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     try {
       await firebaseSignOut(auth);
+      // The onAuthStateChanged listener will set the user to null.
     } catch (error) {
       console.error("Error signing out", error);
     }
