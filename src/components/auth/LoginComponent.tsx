@@ -18,12 +18,23 @@ function GoogleIcon() {
 export function LoginComponent() {
   const { user, loading, signInWithGoogle } = useAuth();
   const router = useRouter();
+  const bypassAuth = process.env.NEXT_PUBLIC_BYPASS_AUTH === 'true';
 
   useEffect(() => {
     if (!loading && user) {
       router.replace("/chat");
     }
   }, [user, loading, router]);
+
+  const handleSignIn = () => {
+    if (bypassAuth) {
+      // In bypass mode, we just need to "reload" to get the mock user.
+      // A simple navigation does the trick.
+      router.replace("/");
+    } else {
+      signInWithGoogle();
+    }
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -34,18 +45,17 @@ export function LoginComponent() {
           </div>
           <CardTitle className="text-2xl font-headline">Welcome to AI Tutoring Research</CardTitle>
           <CardDescription>
-            Sign in to begin your personalized chat experience.
+            {bypassAuth ? "Preview mode is active. Click below to continue." : "Sign in to begin your personalized chat experience."}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Button
-            onClick={signInWithGoogle}
+            onClick={handleSignIn}
             disabled={loading}
             className="w-full bg-white text-black hover:bg-gray-100"
             variant="outline"
           >
-            <GoogleIcon />
-            Sign in with Google
+            {bypassAuth ? "Continue as Preview User" : <><GoogleIcon /> Sign in with Google</> }
           </Button>
         </CardContent>
       </Card>
