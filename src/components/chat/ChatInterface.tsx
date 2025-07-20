@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -36,6 +37,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
   const [loading, setLoading] = useState(true);
   const [isResponding, setIsResponding] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const bypassAuth = process.env.NEXT_PUBLIC_BYPASS_AUTH === 'true';
 
   const scrollToBottom = () => {
     if (scrollAreaRef.current) {
@@ -50,6 +52,31 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
   
   useEffect(() => {
     if (!user) return;
+    if (bypassAuth) {
+        setLoading(false);
+        if (messages.length === 0) {
+            setIsResponding(true);
+            generateContextAwareIntroduction({ surveyResponses: JSON.stringify(surveyData) })
+                .then(res => {
+                    if (res.introduction) {
+                        const introMsg: Omit<Message, 'id'> = {
+                            content: res.introduction,
+                            role: 'assistant',
+                            timestamp: new Date() as any, // Use JS date for preview
+                        };
+                        setMessages([introMsg as Message]);
+                    }
+                })
+                .catch(error => {
+                    console.error("Error generating introduction:", error);
+                    toast({ variant: "destructive", title: "Error", description: "Failed to start conversation." });
+                })
+                .finally(() => {
+                    setIsResponding(false);
+                });
+        }
+        return;
+    }
 
     const q = query(
       collection(db, "chats"),
@@ -73,8 +100,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
               role: 'assistant',
               timestamp: serverTimestamp() as any,
             };
-            setMessages([introMsg as Message]);
-            
+            // No need to setMessages here, onSnapshot will handle it
             await addDoc(collection(db, "chats"), { ...introMsg, userId: user.uid });
           }
         } catch (error) {
@@ -94,7 +120,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
     });
 
     return () => unsubscribe();
-  }, [user, surveyData, toast]);
+  }, [user, surveyData, toast, bypassAuth]);
 
   const handleSend = async () => {
     if (input.trim() === "" || !user) return;
@@ -104,14 +130,16 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
     const userMessage: Omit<Message, 'id'> = {
       content: userMessageContent,
       role: 'user',
-      timestamp: serverTimestamp() as any,
+      timestamp: bypassAuth ? new Date() as any : serverTimestamp() as any,
     };
     
     setMessages(prev => [...prev, userMessage as Message]);
     setIsResponding(true);
 
     try {
-        await addDoc(collection(db, "chats"), { ...userMessage, userId: user.uid });
+        if (!bypassAuth) {
+            await addDoc(collection(db, "chats"), { ...userMessage, userId: user.uid });
+        }
 
         const res = await personalizedChat({ surveyResponses: surveyData, userMessage: userMessageContent });
         
@@ -119,9 +147,13 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
             const assistantMessage: Omit<Message, 'id'> = {
                 content: res.chatbotResponse,
                 role: 'assistant',
-                timestamp: serverTimestamp() as any,
+                timestamp: bypassAuth ? new Date() as any : serverTimestamp() as any,
             };
-            await addDoc(collection(db, "chats"), { ...assistantMessage, userId: user.uid });
+            if (bypassAuth) {
+                 setMessages(prev => [...prev, assistantMessage as Message]);
+            } else {
+                await addDoc(collection(db, "chats"), { ...assistantMessage, userId: user.uid });
+            }
         }
     } catch (error) {
         console.error("Error sending message:", error);
