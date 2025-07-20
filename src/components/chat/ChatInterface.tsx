@@ -15,14 +15,13 @@ import { LogOut, Bot, Send, RefreshCw } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ChatMessage from "./ChatMessage";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { db } from "@/lib/firebase";
 import { generateContextAwareIntroduction } from "@/ai/flows/context-aware-introduction";
 import { personalizedChat } from "@/ai/flows/personalized-chat";
 import type { Message } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "../ui/skeleton";
 import { Logo } from "../Logo";
+import { Timestamp } from "firebase/firestore";
 
 type ChatInterfaceProps = {
   surveyData: Record<string, any>;
@@ -63,22 +62,14 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
             id: `assistant-${Date.now()}`,
             content: res.introduction,
             role: 'assistant',
-            timestamp: new Date() as any, 
+            timestamp: Timestamp.now(), 
             userId: user.uid,
           };
           setMessages([introMsg]);
-
-          await addDoc(collection(db, "chats"), {
-            content: introMsg.content,
-            role: introMsg.role,
-            timestamp: serverTimestamp(),
-            userId: introMsg.userId,
-            surveyData: surveyData,
-          });
         }
       } catch (error) {
         console.error("Error generating introduction:", error);
-        toast({ variant: "destructive", title: "Error", description: "Failed to start conversation. Please check your connection or permissions." });
+        toast({ variant: "destructive", title: "Error", description: "Failed to start conversation. Please try again." });
       } finally {
         setIsResponding(false);
       }
@@ -102,7 +93,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
       id: `user-${Date.now()}`,
       content: userMessageContent,
       role: 'user',
-      timestamp: new Date() as any,
+      timestamp: Timestamp.now(),
       userId: user.uid,
     };
     
@@ -110,14 +101,6 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
     setIsResponding(true);
     
     try {
-        const userMessageForDb = {
-            content: userMessage.content,
-            role: userMessage.role,
-            timestamp: serverTimestamp(),
-            userId: userMessage.userId
-        };
-        await addDoc(collection(db, "chats"), userMessageForDb);
-        
         const res = await personalizedChat({ surveyResponses: surveyData, userMessage: userMessageContent });
         
         if (res.chatbotResponse) {
@@ -125,24 +108,14 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
                 id: `assistant-${Date.now()}`,
                 content: res.chatbotResponse,
                 role: 'assistant',
-                timestamp: new Date() as any,
+                timestamp: Timestamp.now(),
                 userId: user.uid
             };
-
             setMessages(prev => [...prev, assistantMessage]);
-            
-            const assistantMessageForDb = {
-                content: assistantMessage.content,
-                role: assistantMessage.role,
-                timestamp: serverTimestamp(),
-                userId: assistantMessage.userId,
-            };
-            await addDoc(collection(db, "chats"), assistantMessageForDb);
         }
     } catch (error) {
         console.error("Error sending message:", error);
-        toast({ variant: "destructive", title: "Error", description: "Failed to send message. Please check permissions." });
-        // Revert local state update on failure
+        toast({ variant: "destructive", title: "Error", description: "Failed to send message. Please check your connection." });
         setMessages(prev => prev.filter(m => m.id !== userMessage.id));
         setInput(userMessageContent);
     } finally {
