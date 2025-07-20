@@ -49,70 +49,71 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
   };
 
   useEffect(() => {
-    if (messages.length > 0) {
-      scrollToBottom();
-    }
+    scrollToBottom();
   }, [messages]);
-  
+
+  // Effect for listening to Firestore for chat messages
   useEffect(() => {
-    if (!user) return; // Guard against running this effect if the user is not yet available
-  
+    if (!user) return;
+    
     setLoading(true);
 
     if (bypassAuth) {
-      setIsResponding(true);
-      generateContextAwareIntroduction({ surveyResponses: JSON.stringify(surveyData) })
-        .then(res => {
-          if (res.introduction) {
-            const introMsg: Message = {
-              id: 'intro-1',
-              content: res.introduction,
-              role: 'assistant',
-              timestamp: new Date() as any,
-              userId: user.uid,
-            };
-            setMessages([introMsg]);
-          }
-        })
-        .catch(error => {
-          console.error("Error generating introduction:", error);
-          toast({ variant: "destructive", title: "Error", description: "Failed to start conversation." });
-        })
-        .finally(() => {
-          setIsResponding(false);
-          setLoading(false);
-        });
-      return; // End the effect for bypass mode
+        // In bypass mode, we handle the intro separately.
+        setLoading(false);
+        return; 
     }
-    
-    // This is the Firestore query
+
     const q = query(
       collection(db, "chats"),
       where("userId", "==", user.uid),
       orderBy("timestamp", "asc")
     );
-  
-    // onSnapshot sets up a real-time listener.
-    const unsubscribe = onSnapshot(q, async (querySnapshot) => {
-      const msgs: Message[] = [];
-      querySnapshot.forEach((doc) => {
-        msgs.push({ id: doc.id, ...doc.data() } as Message);
-      });
-  
-      // If the query is empty, it means this is a new chat.
-      // Generate the introductory message.
-      if (querySnapshot.empty) {
-        setIsResponding(true);
+
+    const unsubscribe = onSnapshot(q, 
+      (querySnapshot) => {
+        const msgs: Message[] = [];
+        querySnapshot.forEach((doc) => {
+          msgs.push({ id: doc.id, ...doc.data() } as Message);
+        });
+        setMessages(msgs);
+        setLoading(false);
+      }, 
+      (error) => {
+        console.error("Error fetching chat history:", error);
+        toast({ variant: "destructive", title: "Error", description: "Could not load chat history. Check Firestore security rules and index configuration." });
+        setLoading(false);
+      }
+    );
+
+    return () => unsubscribe();
+  }, [user, bypassAuth, toast]);
+
+
+  // Effect for generating the initial introduction message
+  useEffect(() => {
+    // Only run if not loading, user is present, and there are no messages.
+    if (!loading && user && messages.length === 0) {
+      setIsResponding(true);
+
+      const createIntroduction = async () => {
         try {
           const res = await generateContextAwareIntroduction({ surveyResponses: JSON.stringify(surveyData) });
           if (res.introduction) {
-            // Add the new message to Firestore. onSnapshot will then automatically update the UI.
-            await addDoc(collection(db, "chats"), {
+            const introMsg = {
               content: res.introduction,
-              role: 'assistant',
+              role: 'assistant' as const,
               timestamp: serverTimestamp(),
               userId: user.uid,
-            });
+            };
+            
+            if (bypassAuth) {
+                // In bypass, just update state directly
+                setMessages([{...introMsg, id: 'intro-1', timestamp: new Date() as any}]);
+            } else {
+                // In normal mode, add to Firestore, listener will update state
+                await addDoc(collection(db, "chats"), introMsg);
+            }
           }
         } catch (error) {
           console.error("Error generating introduction:", error);
@@ -120,19 +121,13 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
         } finally {
           setIsResponding(false);
         }
-      } else {
-         setMessages(msgs);
-      }
-      setLoading(false);
-    }, (error) => {
-      console.error("Error fetching chat history:", error);
-      toast({ variant: "destructive", title: "Error", description: "Could not load chat history. Please check Firestore security rules." });
-      setLoading(false);
-    });
-  
-    // The cleanup function for useEffect. This is crucial to prevent memory leaks.
-    return () => unsubscribe();
-  }, [user, surveyData, toast, bypassAuth]); // Only re-run if these core identifiers change.
+      };
+      
+      createIntroduction();
+    }
+    // This should only depend on these stable values.
+  }, [loading, user, messages.length, surveyData, toast, bypassAuth]);
+
 
   const handleSend = async () => {
     if (input.trim() === "" || !user) return;
