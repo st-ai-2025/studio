@@ -13,38 +13,20 @@ export default function ChatPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
 
-  // Redirect to login if auth check is complete and there's no user.
   useEffect(() => {
     if (!loading && !user) {
       router.replace("/login");
     }
   }, [user, loading, router]);
 
-  // Load survey data from session storage on initial render.
-  useEffect(() => {
-    try {
-      const savedData = sessionStorage.getItem('surveyData');
-      if (savedData) {
-        setSurveyData(JSON.parse(savedData));
-      }
-    } catch (error) {
-        console.error("Could not parse survey data from session storage", error);
-        sessionStorage.removeItem('surveyData');
-    }
-  }, []);
-
-
   const handleSurveySubmit = (data: Record<string, any>) => {
-    sessionStorage.setItem('surveyData', JSON.stringify(data));
     setSurveyData(data);
   };
   
   const handleResetSurvey = () => {
-    sessionStorage.removeItem('surveyData');
     setSurveyData(null);
   }
 
-  // Display a loading indicator while authentication is in progress.
   if (loading || !user) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
@@ -53,7 +35,6 @@ export default function ChatPage() {
     );
   }
 
-  // Once authenticated, show either the survey or the chat interface.
   return (
     <div className="h-screen bg-background">
       {!surveyData ? (
