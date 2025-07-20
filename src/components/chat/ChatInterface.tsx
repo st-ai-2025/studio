@@ -55,31 +55,29 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
     setLoading(true);
 
     if (bypassAuth) {
-      // In bypass mode, we don't fetch from Firestore.
-      // We can generate an intro message locally.
-      setIsResponding(true);
-      generateContextAwareIntroduction({ surveyResponses: JSON.stringify(surveyData) })
-        .then(res => {
-          if (res.introduction) {
-            const introMsg: Message = {
-              id: 'intro-1',
-              content: res.introduction,
-              role: 'assistant',
-              timestamp: new Date() as any, // Timestamps will be JS dates in bypass
-              userId: user.uid,
-            };
-            setMessages([introMsg]);
-          }
-        })
-        .catch(error => {
-          console.error("Error generating introduction:", error);
-          toast({ variant: "destructive", title: "Error", description: "Failed to start conversation." });
-        })
-        .finally(() => {
-          setIsResponding(false)
-          setLoading(false);
-      });
-      return;
+        setIsResponding(true);
+        generateContextAwareIntroduction({ surveyResponses: JSON.stringify(surveyData) })
+          .then(res => {
+            if (res.introduction) {
+              const introMsg: Message = {
+                id: 'intro-1',
+                content: res.introduction,
+                role: 'assistant',
+                timestamp: new Date() as any,
+                userId: user.uid,
+              };
+              setMessages([introMsg]);
+            }
+          })
+          .catch(error => {
+            console.error("Error generating introduction:", error);
+            toast({ variant: "destructive", title: "Error", description: "Failed to start conversation." });
+          })
+          .finally(() => {
+            setIsResponding(false);
+            setLoading(false);
+        });
+        return;
     }
     
     const q = query(
@@ -89,19 +87,24 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
     );
 
     const unsubscribe = onSnapshot(q, async (querySnapshot) => {
+      const msgs: Message[] = [];
+      querySnapshot.forEach((doc) => {
+        msgs.push({ id: doc.id, ...doc.data() } as Message);
+      });
+      setMessages(msgs);
+
       if (querySnapshot.empty) {
         setIsResponding(true);
         try {
           const res = await generateContextAwareIntroduction({ surveyResponses: JSON.stringify(surveyData) });
           if (res.introduction) {
-            const introMsg: Omit<Message, 'id'> = {
+            await addDoc(collection(db, "chats"), {
               content: res.introduction,
               role: 'assistant',
-              timestamp: serverTimestamp() as any,
+              timestamp: serverTimestamp(),
               userId: user.uid,
-            };
-            await addDoc(collection(db, "chats"), introMsg);
-            // Let onSnapshot handle the first message update
+            });
+            // The new message will be added via the onSnapshot listener, preventing a loop
           }
         } catch (error) {
             console.error("Error generating introduction:", error);
@@ -109,12 +112,6 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
         } finally {
             setIsResponding(false);
         }
-      } else {
-        const msgs: Message[] = [];
-        querySnapshot.forEach((doc) => {
-          msgs.push({ id: doc.id, ...doc.data() } as Message);
-        });
-        setMessages(msgs);
       }
       setLoading(false);
     }, (error) => {
@@ -141,30 +138,18 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
       userId: user.uid,
     };
     
-    // Optimistically update UI
     setMessages(prev => [...prev, userMessage]);
     
-    if (!bypassAuth) {
-      try {
-        // Don't use userMessage directly because timestamp might be a sentinel
-        await addDoc(collection(db, "chats"), {
-            content: userMessage.content,
-            role: userMessage.role,
-            timestamp: serverTimestamp(),
-            userId: userMessage.userId
-        });
-      } catch (error) {
-        console.error("Error saving user message:", error);
-        toast({ variant: "destructive", title: "Error", description: "Failed to save your message." });
-        setIsResponding(false);
-        // Revert optimistic update
-        setMessages(prev => prev.filter(m => m.id !== userMessage.id));
-        setInput(userMessageContent);
-        return;
-      }
-    }
-
     try {
+        if (!bypassAuth) {
+            await addDoc(collection(db, "chats"), {
+                content: userMessage.content,
+                role: userMessage.role,
+                timestamp: serverTimestamp(),
+                userId: userMessage.userId
+            });
+        }
+        
         const res = await personalizedChat({ surveyResponses: surveyData, userMessage: userMessageContent });
         
         if (res.chatbotResponse) {
@@ -176,16 +161,14 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
             };
 
             if (!bypassAuth) {
-              // The onSnapshot listener will add the assistant message to state
               await addDoc(collection(db, "chats"), assistantMessage);
             } else {
-                setMessages(prev => [...prev, {...assistantMessage, id: `assistant-${Date.now()}`}]);
+                setMessages(prev => [...prev.filter(m => m.id !== userMessage.id), userMessage, {...assistantMessage, id: `assistant-${Date.now()}`}]);
             }
         }
     } catch (error) {
         console.error("Error sending message:", error);
         toast({ variant: "destructive", title: "Error", description: "Failed to send message." });
-        // Revert optimistic update
         setMessages(prev => prev.filter(m => m.id !== userMessage.id));
         setInput(userMessageContent);
     } finally {
@@ -193,7 +176,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
     }
   };
 
-  if (loading) {
+  if (loading && messages.length === 0) {
     return (
         <div className="flex h-screen flex-col">
             <header className="flex h-16 shrink-0 items-center justify-between border-b px-4">
