@@ -3,15 +3,20 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Default deny all access
+    
+    // By default, deny all access
     match /{document=**} {
       allow read, write: if false;
     }
 
-    // Allow users to read, create their own chat messages.
-    // The userId on the document must match the authenticated user's ID.
-    match /chats/{messageId} {
-      allow read, create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+    // Allow users to read and create documents in the 'chats' collection
+    // only if they are authenticated and the document's userId matches their own.
+    match /chats/{chatId} {
+      // For READ operations, check the existing document's data.
+      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
+      
+      // For CREATE operations, check the incoming document's data.
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
     }
   }
 }
