@@ -52,32 +52,12 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
   
   useEffect(() => {
     if (!user) return;
-    if (bypassAuth) {
-        setLoading(false);
-        if (messages.length === 0) {
-            setIsResponding(true);
-            generateContextAwareIntroduction({ surveyResponses: JSON.stringify(surveyData) })
-                .then(res => {
-                    if (res.introduction) {
-                        const introMsg: Omit<Message, 'id'> = {
-                            content: res.introduction,
-                            role: 'assistant',
-                            timestamp: new Date() as any, // Use JS date for preview
-                        };
-                        setMessages([introMsg as Message]);
-                    }
-                })
-                .catch(error => {
-                    console.error("Error generating introduction:", error);
-                    toast({ variant: "destructive", title: "Error", description: "Failed to start conversation." });
-                })
-                .finally(() => {
-                    setIsResponding(false);
-                });
-        }
-        return;
-    }
 
+    if (bypassAuth && messages.length > 0) {
+      setLoading(false);
+      return;
+    }
+    
     const q = query(
       collection(db, "chats"),
       where("userId", "==", user.uid),
@@ -89,8 +69,8 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
       querySnapshot.forEach((doc) => {
         msgs.push({ id: doc.id, ...doc.data() } as Message);
       });
-
-      if (msgs.length === 0) {
+      
+      if (msgs.length === 0 && !isResponding) {
         setIsResponding(true);
         try {
           const res = await generateContextAwareIntroduction({ surveyResponses: JSON.stringify(surveyData) });
@@ -99,9 +79,10 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
               content: res.introduction,
               role: 'assistant',
               timestamp: serverTimestamp() as any,
+              userId: user.uid,
             };
-            // No need to setMessages here, onSnapshot will handle it
-            await addDoc(collection(db, "chats"), { ...introMsg, userId: user.uid });
+            await addDoc(collection(db, "chats"), introMsg);
+            // Let onSnapshot handle the update
           }
         } catch (error) {
             console.error("Error generating introduction:", error);
@@ -120,48 +101,47 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
     });
 
     return () => unsubscribe();
-  }, [user, surveyData, toast, bypassAuth]);
+  }, [user, surveyData, toast, bypassAuth, isResponding]);
 
   const handleSend = async () => {
     if (input.trim() === "" || !user) return;
 
     const userMessageContent = input;
     setInput("");
-    const userMessage: Omit<Message, 'id'> = {
+    setIsResponding(true);
+
+    const userMessage: Omit<Message, 'id' | 'userId'> & { userId: string, timestamp: any } = {
       content: userMessageContent,
       role: 'user',
-      timestamp: bypassAuth ? new Date() as any : serverTimestamp() as any,
+      timestamp: serverTimestamp(),
+      userId: user.uid,
     };
     
     setMessages(prev => [...prev, userMessage as Message]);
-    setIsResponding(true);
 
     try {
-        if (!bypassAuth) {
-            await addDoc(collection(db, "chats"), { ...userMessage, userId: user.uid });
-        }
+        await addDoc(collection(db, "chats"), userMessage);
 
         const res = await personalizedChat({ surveyResponses: surveyData, userMessage: userMessageContent });
         
         if (res.chatbotResponse) {
-            const assistantMessage: Omit<Message, 'id'> = {
+            const assistantMessage: Omit<Message, 'id' | 'userId'> & { userId: string, timestamp: any } = {
                 content: res.chatbotResponse,
                 role: 'assistant',
-                timestamp: bypassAuth ? new Date() as any : serverTimestamp() as any,
+                timestamp: serverTimestamp(),
+                userId: user.uid
             };
+            await addDoc(collection(db, "chats"), assistantMessage);
+            // Let onSnapshot handle displaying the assistant message if not in bypassAuth
             if (bypassAuth) {
-                 setMessages(prev => [...prev, assistantMessage as Message]);
-            } else {
-                await addDoc(collection(db, "chats"), { ...assistantMessage, userId: user.uid });
+                setMessages(prev => [...prev, assistantMessage as Message]);
             }
         }
     } catch (error) {
         console.error("Error sending message:", error);
         toast({ variant: "destructive", title: "Error", description: "Failed to send message." });
-        // Re-add input to text area if sending fails
         setInput(userMessageContent);
-        // Remove optimistic user message from state
-        setMessages(prev => prev.slice(0, -1));
+        setMessages(prev => prev.filter(msg => msg.content !== userMessageContent));
     } finally {
         setIsResponding(false);
     }
