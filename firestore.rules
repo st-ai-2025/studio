@@ -3,15 +3,15 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Default deny all access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Allow users to read, create their own chat messages.
+    // The userId on the document must match the authenticated user's ID.
     match /chats/{messageId} {
-      // Allow users to read their own messages
-      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
-      
-      // Allow users to create their own messages
-      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
-      
-      // Deny updates and deletes for now
-      allow update, delete: if false;
+      allow read, create: if request.auth != null && request.auth.uid == request.resource.data.userId;
     }
   }
 }
