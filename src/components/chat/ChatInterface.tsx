@@ -53,8 +53,31 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
   useEffect(() => {
     if (!user) return;
 
-    if (bypassAuth && messages.length > 0) {
+    if (bypassAuth) {
       setLoading(false);
+      // In bypass mode, we don't fetch from Firestore.
+      // We can generate an intro message locally.
+      if (messages.length === 0) {
+        setIsResponding(true);
+        generateContextAwareIntroduction({ surveyResponses: JSON.stringify(surveyData) })
+          .then(res => {
+            if (res.introduction) {
+              const introMsg: Message = {
+                id: 'intro-1',
+                content: res.introduction,
+                role: 'assistant',
+                timestamp: new Date() as any, // Timestamps will be JS dates in bypass
+                userId: user.uid,
+              };
+              setMessages([introMsg]);
+            }
+          })
+          .catch(error => {
+            console.error("Error generating introduction:", error);
+            toast({ variant: "destructive", title: "Error", description: "Failed to start conversation." });
+          })
+          .finally(() => setIsResponding(false));
+      }
       return;
     }
     
@@ -110,38 +133,59 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
     setInput("");
     setIsResponding(true);
 
-    const userMessage: Omit<Message, 'id' | 'userId'> & { userId: string, timestamp: any } = {
+    const userMessage: Message = {
+      id: `user-${Date.now()}`,
       content: userMessageContent,
       role: 'user',
-      timestamp: serverTimestamp(),
+      timestamp: (bypassAuth ? new Date() : serverTimestamp()) as any,
       userId: user.uid,
     };
     
-    setMessages(prev => [...prev, userMessage as Message]);
+    setMessages(prev => [...prev, userMessage]);
+    
+    if (!bypassAuth) {
+      try {
+        await addDoc(collection(db, "chats"), {
+            content: userMessage.content,
+            role: userMessage.role,
+            timestamp: userMessage.timestamp,
+            userId: userMessage.userId
+        });
+      } catch (error) {
+        console.error("Error saving user message:", error);
+        toast({ variant: "destructive", title: "Error", description: "Failed to save your message." });
+        setIsResponding(false);
+        return;
+      }
+    }
 
     try {
-        await addDoc(collection(db, "chats"), userMessage);
-
         const res = await personalizedChat({ surveyResponses: surveyData, userMessage: userMessageContent });
         
         if (res.chatbotResponse) {
-            const assistantMessage: Omit<Message, 'id' | 'userId'> & { userId: string, timestamp: any } = {
+            const assistantMessage: Message = {
+                id: `assistant-${Date.now()}`,
                 content: res.chatbotResponse,
                 role: 'assistant',
-                timestamp: serverTimestamp(),
+                timestamp: (bypassAuth ? new Date() : serverTimestamp()) as any,
                 userId: user.uid
             };
-            await addDoc(collection(db, "chats"), assistantMessage);
-            // Let onSnapshot handle displaying the assistant message if not in bypassAuth
-            if (bypassAuth) {
-                setMessages(prev => [...prev, assistantMessage as Message]);
+            setMessages(prev => [...prev, assistantMessage]);
+
+            if (!bypassAuth) {
+              await addDoc(collection(db, "chats"), {
+                  content: assistantMessage.content,
+                  role: assistantMessage.role,
+                  timestamp: assistantMessage.timestamp,
+                  userId: assistantMessage.userId
+              });
             }
         }
     } catch (error) {
         console.error("Error sending message:", error);
         toast({ variant: "destructive", title: "Error", description: "Failed to send message." });
         setInput(userMessageContent);
-        setMessages(prev => prev.filter(msg => msg.content !== userMessageContent));
+        setMessages(prev => prev.slice(0, -1)); // Remove the user message on error
     } finally {
         setIsResponding(false);
     }
@@ -195,7 +239,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
         <ScrollArea className="h-full" ref={scrollAreaRef}>
           <div className="p-4 md:p-6 space-y-6">
             {messages.map((msg, index) => (
-              <ChatMessage key={index} message={msg} />
+              <ChatMessage key={msg.id || index} message={msg} />
             ))}
             {isResponding && (
                 <div className="flex items-start gap-4">
@@ -239,3 +283,5 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
     </div>
   );
 }
+
+    

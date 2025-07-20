@@ -15,6 +15,10 @@ export default function ChatMessage({ message }: ChatMessageProps) {
   const { user } = useAuth();
   const isUser = message.role === "user";
 
+  // Handle cases where user might be null during auth state changes
+  const photoURL = user?.photoURL || undefined;
+  const displayName = user?.displayName;
+
   return (
     <div className={cn("flex items-start gap-4", isUser && "justify-end")}>
       {!isUser && (
@@ -32,12 +36,14 @@ export default function ChatMessage({ message }: ChatMessageProps) {
       </Card>
       {isUser && (
         <Avatar className="h-10 w-10">
-          <AvatarImage src={user?.photoURL || undefined} />
+          <AvatarImage src={photoURL} />
           <AvatarFallback>
-            {user?.displayName ? user.displayName.charAt(0) : <UserIcon />}
+            {displayName ? displayName.charAt(0) : <UserIcon />}
           </AvatarFallback>
         </Avatar>
       )}
     </div>
   );
 }
+
+    
