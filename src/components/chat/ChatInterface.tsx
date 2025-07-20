@@ -48,7 +48,11 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
     }
   };
 
-  useEffect(scrollToBottom, [messages]);
+  useEffect(() => {
+    if (messages.length > 0) {
+      scrollToBottom();
+    }
+  }, [messages]);
   
   useEffect(() => {
     if (!user) return; // Guard against running this effect if the user is not yet available
@@ -94,7 +98,6 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
       querySnapshot.forEach((doc) => {
         msgs.push({ id: doc.id, ...doc.data() } as Message);
       });
-      setMessages(msgs);
   
       // If the query is empty, it means this is a new chat.
       // Generate the introductory message.
@@ -117,6 +120,8 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
         } finally {
           setIsResponding(false);
         }
+      } else {
+         setMessages(msgs);
       }
       setLoading(false);
     }, (error) => {
@@ -144,8 +149,10 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
       userId: user.uid,
     };
     
-    // Optimistically update UI
-    setMessages(prev => [...prev, userMessage]);
+    // Optimistically update UI only in bypass mode, otherwise let Firestore handle it
+    if (bypassAuth) {
+        setMessages(prev => [...prev, userMessage]);
+    }
     
     try {
         if (!bypassAuth) {
@@ -177,8 +184,10 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
     } catch (error) {
         console.error("Error sending message:", error);
         toast({ variant: "destructive", title: "Error", description: "Failed to send message." });
-        // Rollback optimistic update on error
-        setMessages(prev => prev.filter(m => m.id !== userMessage.id));
+        // Rollback optimistic update on error if in bypass mode
+        if(bypassAuth) {
+            setMessages(prev => prev.filter(m => m.id !== userMessage.id));
+        }
         setInput(userMessageContent);
     } finally {
         setIsResponding(false);
