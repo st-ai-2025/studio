@@ -51,77 +51,83 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
   useEffect(scrollToBottom, [messages]);
   
   useEffect(() => {
-    if (!user) return;
+    if (!user) return; // Guard against running this effect if the user is not yet available
+  
     setLoading(true);
 
     if (bypassAuth) {
-        setIsResponding(true);
-        generateContextAwareIntroduction({ surveyResponses: JSON.stringify(surveyData) })
-          .then(res => {
-            if (res.introduction) {
-              const introMsg: Message = {
-                id: 'intro-1',
-                content: res.introduction,
-                role: 'assistant',
-                timestamp: new Date() as any,
-                userId: user.uid,
-              };
-              setMessages([introMsg]);
-            }
-          })
-          .catch(error => {
-            console.error("Error generating introduction:", error);
-            toast({ variant: "destructive", title: "Error", description: "Failed to start conversation." });
-          })
-          .finally(() => {
-            setIsResponding(false);
-            setLoading(false);
+      setIsResponding(true);
+      generateContextAwareIntroduction({ surveyResponses: JSON.stringify(surveyData) })
+        .then(res => {
+          if (res.introduction) {
+            const introMsg: Message = {
+              id: 'intro-1',
+              content: res.introduction,
+              role: 'assistant',
+              timestamp: new Date() as any,
+              userId: user.uid,
+            };
+            setMessages([introMsg]);
+          }
+        })
+        .catch(error => {
+          console.error("Error generating introduction:", error);
+          toast({ variant: "destructive", title: "Error", description: "Failed to start conversation." });
+        })
+        .finally(() => {
+          setIsResponding(false);
+          setLoading(false);
         });
-        return;
+      return; // End the effect for bypass mode
     }
     
+    // This is the Firestore query
     const q = query(
       collection(db, "chats"),
       where("userId", "==", user.uid),
       orderBy("timestamp", "asc")
     );
-
+  
+    // onSnapshot sets up a real-time listener.
     const unsubscribe = onSnapshot(q, async (querySnapshot) => {
       const msgs: Message[] = [];
       querySnapshot.forEach((doc) => {
         msgs.push({ id: doc.id, ...doc.data() } as Message);
       });
       setMessages(msgs);
-
+  
+      // If the query is empty, it means this is a new chat.
+      // Generate the introductory message.
       if (querySnapshot.empty) {
         setIsResponding(true);
         try {
           const res = await generateContextAwareIntroduction({ surveyResponses: JSON.stringify(surveyData) });
           if (res.introduction) {
+            // Add the new message to Firestore. onSnapshot will then automatically update the UI.
             await addDoc(collection(db, "chats"), {
               content: res.introduction,
               role: 'assistant',
               timestamp: serverTimestamp(),
               userId: user.uid,
             });
-            // The new message will be added via the onSnapshot listener, preventing a loop
           }
         } catch (error) {
-            console.error("Error generating introduction:", error);
-            toast({ variant: "destructive", title: "Error", description: "Failed to start conversation." });
+          console.error("Error generating introduction:", error);
+          toast({ variant: "destructive", title: "Error", description: "Failed to start conversation." });
         } finally {
-            setIsResponding(false);
+          setIsResponding(false);
         }
       }
       setLoading(false);
     }, (error) => {
       console.error("Error fetching chat history:", error);
-      toast({ variant: "destructive", title: "Error", description: "Could not load chat history." });
+      toast({ variant: "destructive", title: "Error", description: "Could not load chat history. Please check Firestore security rules." });
       setLoading(false);
     });
-
+  
+    // The cleanup function for useEffect. This is crucial to prevent memory leaks.
     return () => unsubscribe();
-  }, [user, surveyData, toast, bypassAuth]);
+  }, [user, surveyData, toast, bypassAuth]); // Only re-run if these core identifiers change.
 
   const handleSend = async () => {
     if (input.trim() === "" || !user) return;
@@ -138,6 +144,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
       userId: user.uid,
     };
     
+    // Optimistically update UI
     setMessages(prev => [...prev, userMessage]);
     
     try {
@@ -161,6 +168,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
             };
 
             if (!bypassAuth) {
+              // The onSnapshot listener will handle adding the assistant message to the UI
               await addDoc(collection(db, "chats"), assistantMessage);
             } else {
                 setMessages(prev => [...prev.filter(m => m.id !== userMessage.id), userMessage, {...assistantMessage, id: `assistant-${Date.now()}`}]);
@@ -169,6 +177,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
     } catch (error) {
         console.error("Error sending message:", error);
         toast({ variant: "destructive", title: "Error", description: "Failed to send message." });
+        // Rollback optimistic update on error
         setMessages(prev => prev.filter(m => m.id !== userMessage.id));
         setInput(userMessageContent);
     } finally {
