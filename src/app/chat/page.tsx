@@ -18,12 +18,7 @@ export default function ChatPage() {
     }
   }, [user, loading, router]);
 
-  useEffect(() => {
-    const savedSurveyData = sessionStorage.getItem('surveyData');
-    if (savedSurveyData) {
-      setSurveyData(JSON.parse(savedSurveyData));
-    }
-  }, []);
+  // The code that was here to load from sessionStorage has been removed.
 
   if (loading || !user) {
     return (
