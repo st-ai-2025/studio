@@ -55,11 +55,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [bypassAuth]);
 
   const signInWithGoogle = async () => {
-    if (bypassAuth) return;
+    if (bypassAuth) {
+      setUser(mockUser); // Ensure mock user is set on "sign in"
+      return;
+    }
+    setLoading(true);
     try {
-      await signInWithPopup(auth, googleProvider);
-    } catch (error) {
-      console.error("Error signing in with Google", error);
+      const result = await signInWithPopup(auth, googleProvider);
+      // The onAuthStateChanged listener will handle the user state update.
+      // We can also setUser here if needed, but the listener is generally sufficient.
+      // setUser(result.user);
+    } catch (error: any) {
+      // Don't log "popup-closed-by-user" as a console error as it's a common user action
+      if (error.code !== 'auth/popup-closed-by-user') {
+        console.error("Error signing in with Google", error);
+      }
+    } finally {
+      // The onAuthStateChanged listener will set loading to false.
+      // We can leave this out to avoid flickering.
+      // setLoading(false);
     }
   };
 
