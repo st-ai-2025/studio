@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { Message } from "@/types";
@@ -8,14 +9,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 type ChatMessageProps = {
-  message: Message;
+  message: Omit<Message, 'id' | 'timestamp'>;
 };
 
 export default function ChatMessage({ message }: ChatMessageProps) {
   const { user } = useAuth();
   const isUser = message.role === "user";
 
-  // Handle cases where user might be null during auth state changes
   const photoURL = user?.photoURL || undefined;
   const displayName = user?.displayName;
 
@@ -45,5 +45,3 @@ export default function ChatMessage({ message }: ChatMessageProps) {
     </div>
   );
 }
-
-    

@@ -21,7 +21,8 @@ import type { Message } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "../ui/skeleton";
 import { Logo } from "../Logo";
-import { Timestamp } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 
 type ChatInterfaceProps = {
   surveyData: Record<string, any>;
@@ -31,7 +32,7 @@ type ChatInterfaceProps = {
 export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfaceProps) {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Omit<Message, 'id' | 'timestamp'>[]>([]);
   const [input, setInput] = useState("");
   const [isResponding, setIsResponding] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -49,7 +50,6 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
     scrollToBottom();
   }, [messages]);
 
-  // Generate the initial introduction message
   useEffect(() => {
     if (!user) return;
 
@@ -58,14 +58,16 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
       try {
         const res = await generateContextAwareIntroduction({ surveyResponses: JSON.stringify(surveyData) });
         if (res.introduction) {
-          const introMsg: Message = {
-            id: `assistant-${Date.now()}`,
+          const introMsg = {
             content: res.introduction,
-            role: 'assistant',
-            timestamp: Timestamp.now(), 
+            role: 'assistant' as const,
             userId: user.uid,
           };
           setMessages([introMsg]);
+           await addDoc(collection(db, "chats"), {
+            ...introMsg,
+            timestamp: serverTimestamp(),
+          });
         }
       } catch (error) {
         console.error("Error generating introduction:", error);
@@ -76,7 +78,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
     };
 
     generateIntro();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, surveyData]);
 
 
@@ -89,34 +91,39 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
     const userMessageContent = input;
     setInput("");
 
-    const userMessage: Message = {
-      id: `user-${Date.now()}`,
+    const userMessage = {
       content: userMessageContent,
-      role: 'user',
-      timestamp: Timestamp.now(),
+      role: 'user' as const,
       userId: user.uid,
     };
     
     setMessages(prev => [...prev, userMessage]);
     setIsResponding(true);
-    
+
     try {
+        await addDoc(collection(db, "chats"), {
+            ...userMessage,
+            timestamp: serverTimestamp(),
+        });
+        
         const res = await personalizedChat({ surveyResponses: surveyData, userMessage: userMessageContent });
         
         if (res.chatbotResponse) {
-            const assistantMessage: Message = {
-                id: `assistant-${Date.now()}`,
+            const assistantMessage = {
                 content: res.chatbotResponse,
-                role: 'assistant',
-                timestamp: Timestamp.now(),
+                role: 'assistant' as const,
                 userId: user.uid
             };
             setMessages(prev => [...prev, assistantMessage]);
+            await addDoc(collection(db, "chats"), {
+              ...assistantMessage,
+              timestamp: serverTimestamp(),
+            });
         }
     } catch (error) {
         console.error("Error sending message:", error);
         toast({ variant: "destructive", title: "Error", description: "Failed to send message. Please check your connection." });
-        setMessages(prev => prev.filter(m => m.id !== userMessage.id));
+        setMessages(prev => prev.slice(0, -1));
         setInput(userMessageContent);
     } finally {
         setIsResponding(false);
@@ -141,9 +148,6 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={onResetSurvey}><RefreshCw className="mr-2 h-4 w-4" />New Survey</DropdownMenuItem>
-            <DropdownMenuItem asChild>
-                <a href="https://forms.gle/your-post-chat-survey-link" target="_blank" rel="noopener noreferrer">Post-Chat Survey</a>
-            </DropdownMenuItem>
             <DropdownMenuItem onClick={signOut}><LogOut className="mr-2 h-4 w-4" />Sign Out</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -152,7 +156,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
         <ScrollArea className="h-full" ref={scrollAreaRef}>
           <div className="p-4 md:p-6 space-y-6">
             {messages.map((msg, index) => (
-              <ChatMessage key={msg.id || index} message={msg} />
+              <ChatMessage key={index} message={msg} />
             ))}
             {isResponding && messages.length > 0 && (
                 <div className="flex items-start gap-4">
@@ -165,7 +169,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
                     </div>
                 </div>
             )}
-            {messages.length === 0 && (
+             {messages.length === 0 && (
                  <div className="flex items-start gap-4">
                     <Avatar className="h-10 w-10 border">
                         <AvatarFallback><Bot className="h-5 w-5"/></AvatarFallback>

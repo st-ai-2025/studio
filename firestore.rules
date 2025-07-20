@@ -1,0 +1,15 @@
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /chats/{chatId} {
+      // Allow users to create chat messages for themselves.
+      // The `userId` in the new document must match the authenticated user's ID.
+      allow create: if request.resource.data.userId == request.auth.uid;
+
+      // Allow users to read their own chat messages.
+      allow read: if resource.data.userId == request.auth.uid;
+    }
+  }
+}
