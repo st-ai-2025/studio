@@ -57,32 +57,28 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
     if (bypassAuth) {
       // In bypass mode, we don't fetch from Firestore.
       // We can generate an intro message locally.
-      if (messages.length === 0) {
-        setIsResponding(true);
-        generateContextAwareIntroduction({ surveyResponses: JSON.stringify(surveyData) })
-          .then(res => {
-            if (res.introduction) {
-              const introMsg: Message = {
-                id: 'intro-1',
-                content: res.introduction,
-                role: 'assistant',
-                timestamp: new Date() as any, // Timestamps will be JS dates in bypass
-                userId: user.uid,
-              };
-              setMessages([introMsg]);
-            }
-          })
-          .catch(error => {
-            console.error("Error generating introduction:", error);
-            toast({ variant: "destructive", title: "Error", description: "Failed to start conversation." });
-          })
-          .finally(() => {
-            setIsResponding(false)
-            setLoading(false);
-        });
-      } else {
-        setLoading(false);
-      }
+      setIsResponding(true);
+      generateContextAwareIntroduction({ surveyResponses: JSON.stringify(surveyData) })
+        .then(res => {
+          if (res.introduction) {
+            const introMsg: Message = {
+              id: 'intro-1',
+              content: res.introduction,
+              role: 'assistant',
+              timestamp: new Date() as any, // Timestamps will be JS dates in bypass
+              userId: user.uid,
+            };
+            setMessages([introMsg]);
+          }
+        })
+        .catch(error => {
+          console.error("Error generating introduction:", error);
+          toast({ variant: "destructive", title: "Error", description: "Failed to start conversation." });
+        })
+        .finally(() => {
+          setIsResponding(false)
+          setLoading(false);
+      });
       return;
     }
     
@@ -93,12 +89,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
     );
 
     const unsubscribe = onSnapshot(q, async (querySnapshot) => {
-      const msgs: Message[] = [];
-      querySnapshot.forEach((doc) => {
-        msgs.push({ id: doc.id, ...doc.data() } as Message);
-      });
-      
-      if (msgs.length === 0) {
+      if (querySnapshot.empty) {
         setIsResponding(true);
         try {
           const res = await generateContextAwareIntroduction({ surveyResponses: JSON.stringify(surveyData) });
@@ -110,7 +101,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
               userId: user.uid,
             };
             await addDoc(collection(db, "chats"), introMsg);
-            // Let onSnapshot handle the update
+            // Let onSnapshot handle the first message update
           }
         } catch (error) {
             console.error("Error generating introduction:", error);
@@ -119,6 +110,10 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
             setIsResponding(false);
         }
       } else {
+        const msgs: Message[] = [];
+        querySnapshot.forEach((doc) => {
+          msgs.push({ id: doc.id, ...doc.data() } as Message);
+        });
         setMessages(msgs);
       }
       setLoading(false);
@@ -129,7 +124,6 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
     });
 
     return () => unsubscribe();
-    // The dependency array is critical. It should ONLY re-run when the user or survey data changes.
   }, [user, surveyData, toast, bypassAuth]);
 
   const handleSend = async () => {
@@ -147,20 +141,25 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
       userId: user.uid,
     };
     
+    // Optimistically update UI
     setMessages(prev => [...prev, userMessage]);
     
     if (!bypassAuth) {
       try {
+        // Don't use userMessage directly because timestamp might be a sentinel
         await addDoc(collection(db, "chats"), {
             content: userMessage.content,
             role: userMessage.role,
-            timestamp: userMessage.timestamp,
+            timestamp: serverTimestamp(),
             userId: userMessage.userId
         });
       } catch (error) {
         console.error("Error saving user message:", error);
         toast({ variant: "destructive", title: "Error", description: "Failed to save your message." });
         setIsResponding(false);
+        // Revert optimistic update
+        setMessages(prev => prev.filter(m => m.id !== userMessage.id));
+        setInput(userMessageContent);
         return;
       }
     }
@@ -169,29 +168,26 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
         const res = await personalizedChat({ surveyResponses: surveyData, userMessage: userMessageContent });
         
         if (res.chatbotResponse) {
-            const assistantMessage: Message = {
-                id: `assistant-${Date.now()}`,
+            const assistantMessage: Omit<Message, 'id'> = {
                 content: res.chatbotResponse,
                 role: 'assistant',
                 timestamp: (bypassAuth ? new Date() : serverTimestamp()) as any,
                 userId: user.uid
             };
-            setMessages(prev => [...prev, assistantMessage]);
 
             if (!bypassAuth) {
-              await addDoc(collection(db, "chats"), {
-                  content: assistantMessage.content,
-                  role: assistantMessage.role,
-                  timestamp: assistantMessage.timestamp,
-                  userId: assistantMessage.userId
-              });
+              // The onSnapshot listener will add the assistant message to state
+              await addDoc(collection(db, "chats"), assistantMessage);
+            } else {
+                setMessages(prev => [...prev, {...assistantMessage, id: `assistant-${Date.now()}`}]);
             }
         }
     } catch (error) {
         console.error("Error sending message:", error);
         toast({ variant: "destructive", title: "Error", description: "Failed to send message." });
+        // Revert optimistic update
+        setMessages(prev => prev.filter(m => m.id !== userMessage.id));
         setInput(userMessageContent);
-        setMessages(prev => prev.slice(0, -1)); // Remove the user message on error
     } finally {
         setIsResponding(false);
     }
@@ -289,5 +285,3 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
     </div>
   );
 }
-
-    
