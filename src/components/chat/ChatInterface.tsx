@@ -52,9 +52,9 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
   
   useEffect(() => {
     if (!user) return;
+    setLoading(true);
 
     if (bypassAuth) {
-      setLoading(false);
       // In bypass mode, we don't fetch from Firestore.
       // We can generate an intro message locally.
       if (messages.length === 0) {
@@ -76,7 +76,12 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
             console.error("Error generating introduction:", error);
             toast({ variant: "destructive", title: "Error", description: "Failed to start conversation." });
           })
-          .finally(() => setIsResponding(false));
+          .finally(() => {
+            setIsResponding(false)
+            setLoading(false);
+        });
+      } else {
+        setLoading(false);
       }
       return;
     }
@@ -93,7 +98,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
         msgs.push({ id: doc.id, ...doc.data() } as Message);
       });
       
-      if (msgs.length === 0 && !isResponding) {
+      if (msgs.length === 0) {
         setIsResponding(true);
         try {
           const res = await generateContextAwareIntroduction({ surveyResponses: JSON.stringify(surveyData) });
@@ -124,7 +129,8 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
     });
 
     return () => unsubscribe();
-  }, [user, surveyData, toast, bypassAuth, isResponding]);
+    // The dependency array is critical. It should ONLY re-run when the user or survey data changes.
+  }, [user, surveyData, toast, bypassAuth]);
 
   const handleSend = async () => {
     if (input.trim() === "" || !user) return;
