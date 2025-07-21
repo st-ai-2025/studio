@@ -14,6 +14,10 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
+// Log the config to the console for easy debugging
+console.log("Firebase Config:", firebaseConfig);
+
+
 // Initialize Firebase
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
@@ -33,6 +37,7 @@ export const createUserProfile = async (user: User) => {
     }, { merge: true }); // Use merge: true to avoid overwriting data if it already exists
   } catch (error) {
     console.error("Error creating user profile:", error);
+    throw error;
   }
 };
 
