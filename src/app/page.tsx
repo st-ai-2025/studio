@@ -1,30 +1,30 @@
+
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { Logo } from "@/components/Logo";
 
 export default function Home() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
   const bypassAuth = process.env.NEXT_PUBLIC_BYPASS_AUTH === 'true';
 
   useEffect(() => {
-    if (!loading) {
+    if (!loading && pathname !== '/test') {
       if (user) {
         router.replace("/chat");
       } else {
         if (bypassAuth) {
-            // In bypass mode, if there's no user, we might be in a signed-out state.
-            // Let's stay on a page that allows "re-login"
             router.replace("/login");
         } else {
             router.replace("/login");
         }
       }
     }
-  }, [user, loading, router, bypassAuth]);
+  }, [user, loading, router, bypassAuth, pathname]);
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background">
