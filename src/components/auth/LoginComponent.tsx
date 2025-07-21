@@ -59,9 +59,6 @@ export function LoginComponent() {
           </Button>
         </CardContent>
         <CardFooter className="flex justify-center text-xs">
-            <Link href="/test" className="text-muted-foreground hover:text-foreground">
-                Firebase Test Page
-            </Link>
         </CardFooter>
       </Card>
     </div>

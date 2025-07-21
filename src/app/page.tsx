@@ -9,11 +9,10 @@ import { Logo } from "@/components/Logo";
 export default function Home() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const pathname = usePathname();
   const bypassAuth = process.env.NEXT_PUBLIC_BYPASS_AUTH === 'true';
 
   useEffect(() => {
-    if (!loading && pathname !== '/test') {
+    if (!loading) {
       if (user) {
         router.replace("/chat");
       } else {
@@ -24,7 +23,7 @@ export default function Home() {
         }
       }
     }
-  }, [user, loading, router, bypassAuth, pathname]);
+  }, [user, loading, router, bypassAuth]);
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background">
