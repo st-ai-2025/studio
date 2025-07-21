@@ -1,12 +1,13 @@
-
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Users can create their own profile document, but not read other users' profiles.
     match /users/{userId} {
       allow read, update, delete: if request.auth.uid == userId;
-      allow create: if request.auth.uid != null;
-      
+      allow create: if request.auth.uid == userId;
+
+      // Users can create, read and write chat messages in their own chats subcollection.
       match /chats/{chatId} {
         allow read, write: if request.auth.uid == userId;
       }
