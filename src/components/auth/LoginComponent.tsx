@@ -1,10 +1,12 @@
+
 "use client";
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Logo } from "@/components/Logo";
 
 function GoogleIcon() {
@@ -28,8 +30,6 @@ export function LoginComponent() {
 
   const handleSignIn = () => {
     if (bypassAuth) {
-      // In bypass mode, we just need to "reload" to get the mock user.
-      // A simple navigation does the trick.
       router.replace("/");
     } else {
       signInWithGoogle();
@@ -58,6 +58,11 @@ export function LoginComponent() {
             {bypassAuth ? "Continue as Preview User" : <><GoogleIcon /> Sign in with Google</> }
           </Button>
         </CardContent>
+        <CardFooter className="flex justify-center text-xs">
+            <Link href="/test" className="text-muted-foreground hover:text-foreground">
+                Firebase Test Page
+            </Link>
+        </CardFooter>
       </Card>
     </div>
   );
