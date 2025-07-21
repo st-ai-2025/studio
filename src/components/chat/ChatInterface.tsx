@@ -106,8 +106,9 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
     setIsResponding(true);
 
     try {
+        // On the first message, create the user profile and the session document
         if (isFirstMessage) {
-            await createUserProfile(user); // Ensure user profile exists
+            await createUserProfile(user); 
             const sessionRef = doc(db, "users", user.uid, "sessions", sessionId);
             await setDoc(sessionRef, {
                 surveyData,
@@ -116,14 +117,15 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
             setIsFirstMessage(false);
         }
 
-        const messagesCollection = collection(db, "users", user.uid, "sessions", sessionId, "messages");
+        const messagesCollectionRef = collection(db, "users", user.uid, "sessions", sessionId, "messages");
         
-        // Save user message
-        await addDoc(messagesCollection, {
+        // Save user message to Firestore
+        await addDoc(messagesCollectionRef, {
             ...userMessage,
             timestamp: serverTimestamp(),
         });
         
+        // Get AI response
         const res = await personalizedChat({ surveyResponses: surveyData, userMessage: userMessageContent });
         
         if (res.chatbotResponse) {
@@ -133,8 +135,9 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
                 userId: user.uid
             };
             setMessages(prev => [...prev, assistantMessage]);
-            // Save assistant message
-            await addDoc(messagesCollection, {
+            
+            // Save assistant message to Firestore
+            await addDoc(messagesCollectionRef, {
               ...assistantMessage,
               timestamp: serverTimestamp(),
             });
