@@ -86,8 +86,6 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
     }
 
     const userMessageContent = input;
-    setInput("");
-
     const userMessage = {
       content: userMessageContent,
       role: 'user' as const,
@@ -95,6 +93,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
     };
     
     setMessages(prev => [...prev, userMessage]);
+    setInput("");
     setIsResponding(true);
 
     try {
