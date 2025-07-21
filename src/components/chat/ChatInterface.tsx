@@ -22,7 +22,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "../ui/skeleton";
 import { Logo } from "../Logo";
 import { db, createUserProfile } from "@/lib/firebase";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { addDoc, collection, serverTimestamp, doc, setDoc } from "firebase/firestore";
 
 type ChatInterfaceProps = {
   surveyData: Record<string, any>;
@@ -36,6 +36,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
   const [input, setInput] = useState("");
   const [isResponding, setIsResponding] = useState(false);
   const [isFirstMessage, setIsFirstMessage] = useState(true);
+  const [sessionId, setSessionId] = useState<string | null>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -46,6 +47,14 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
         }
     }
   };
+
+  useEffect(() => {
+    if (user) {
+      // Generate a new session ID when the component mounts with a user
+      const newSessionId = doc(collection(db, 'users', user.uid, 'sessions')).id;
+      setSessionId(newSessionId);
+    }
+  }, [user]);
 
   useEffect(() => {
     scrollToBottom();
@@ -80,8 +89,8 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
 
 
   const handleSend = async () => {
-    if (input.trim() === "" || !user) {
-        toast({ variant: "destructive", title: "Error", description: "You must be logged in to send a message." });
+    if (input.trim() === "" || !user || !sessionId) {
+        toast({ variant: "destructive", title: "Error", description: "Cannot send message. User or session is not initialized." });
         return;
     }
 
@@ -98,13 +107,19 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
 
     try {
         if (isFirstMessage) {
-            await createUserProfile(user);
+            await createUserProfile(user); // Ensure user profile exists
+            const sessionRef = doc(db, "users", user.uid, "sessions", sessionId);
+            await setDoc(sessionRef, {
+                surveyData,
+                startTime: serverTimestamp(),
+            });
             setIsFirstMessage(false);
         }
 
-        const userChatsCollection = collection(db, "users", user.uid, "chats");
+        const messagesCollection = collection(db, "users", user.uid, "sessions", sessionId, "messages");
         
-        await addDoc(userChatsCollection, {
+        // Save user message
+        await addDoc(messagesCollection, {
             ...userMessage,
             timestamp: serverTimestamp(),
         });
@@ -118,7 +133,8 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
                 userId: user.uid
             };
             setMessages(prev => [...prev, assistantMessage]);
-            await addDoc(userChatsCollection, {
+            // Save assistant message
+            await addDoc(messagesCollection, {
               ...assistantMessage,
               timestamp: serverTimestamp(),
             });

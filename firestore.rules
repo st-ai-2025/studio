@@ -1,16 +1,17 @@
-
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Allow users to create their own user document
     match /users/{userId} {
-      allow create: if request.auth != null && request.auth.uid == userId;
-      allow read, update: if request.auth != null && request.auth.uid == userId;
+      // Allow users to create their own profile document.
+      allow create: if request.auth.uid == userId;
 
-      // Allow users to read and write their own chat messages
-      match /chats/{chatId} {
-        allow read, write: if request.auth != null && request.auth.uid == userId;
+      // Allow users to read and update their own profile document.
+      allow read, update: if request.auth.uid == userId;
+
+      // Allow users to read, create, and write to sessions and their messages sub-collection.
+      match /sessions/{sessionId}/{document=**} {
+        allow read, write, create: if request.auth.uid == userId;
       }
     }
   }
