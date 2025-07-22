@@ -101,7 +101,8 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
       userId: user.uid,
     };
     
-    setMessages(prev => [...prev, userMessage]);
+    const newMessages = [...messages, userMessage];
+    setMessages(newMessages);
     setInput("");
     setIsResponding(true);
 
@@ -126,7 +127,10 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
         });
         
         // Get AI response
-        const res = await personalizedChat({ surveyResponses: surveyData, userMessage: userMessageContent });
+        const res = await personalizedChat({ 
+          surveyResponses: surveyData, 
+          history: newMessages.map(({ role, content }) => ({ role, content })) 
+        });
         
         if (res.chatbotResponse) {
             const assistantMessage = {
