@@ -12,6 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import { Logo } from "@/components/Logo";
+import { useAuth } from "@/hooks/use-auth";
+import { LogOut } from "lucide-react";
 
 const surveySchema = z.object({
   graduationYear: z.string({ required_error: "Please select a graduation year." }),
@@ -26,6 +28,7 @@ type SurveyFormProps = {
 };
 
 export default function SurveyForm({ onSubmit }: SurveyFormProps) {
+  const { signOut } = useAuth();
   const form = useForm<z.infer<typeof surveySchema>>({
     resolver: zodResolver(surveySchema),
     defaultValues: {
@@ -37,14 +40,21 @@ export default function SurveyForm({ onSubmit }: SurveyFormProps) {
   return (
     <div className="flex h-screen items-center justify-center px-4">
       <Card className="w-full max-w-lg shadow-xl">
-        <CardHeader className="text-center">
-            <div className="mx-auto mb-4">
-                <Logo />
+        <CardHeader>
+          <div className="flex justify-between items-start">
+            <div className="text-center flex-grow">
+              <div className="mx-auto mb-4 inline-block">
+                  <Logo />
+              </div>
+              <CardTitle className="text-2xl font-headline">Please answer a few questions about you</CardTitle>
+              <CardDescription className="pt-2">
+                Help us personalize your experience by answering these questions.
+              </CardDescription>
             </div>
-          <CardTitle className="text-2xl font-headline">Just a few questions</CardTitle>
-          <CardDescription>
-            Help us personalize your experience by answering these questions.
-          </CardDescription>
+            <Button variant="ghost" size="icon" onClick={signOut} aria-label="Sign out">
+              <LogOut className="h-5 w-5" />
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -54,7 +64,7 @@ export default function SurveyForm({ onSubmit }: SurveyFormProps) {
                 name="graduationYear"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>High school graduation year</FormLabel>
+                    <FormLabel>1. High school graduation year</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
@@ -79,7 +89,7 @@ export default function SurveyForm({ onSubmit }: SurveyFormProps) {
                 name="subject"
                 render={({ field }) => (
                   <FormItem className="space-y-3">
-                    <FormLabel>Which subject area would you like to receive tutoring today?</FormLabel>
+                    <FormLabel>2. Which subject area would you like to receive tutoring today?</FormLabel>
                     <FormControl>
                       <RadioGroup
                         onValueChange={field.onChange}
@@ -122,7 +132,7 @@ export default function SurveyForm({ onSubmit }: SurveyFormProps) {
                 name="interestLevel"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>How would you rate your level of study interest in this area?</FormLabel>
+                    <FormLabel>3. How would you rate your level of study interest in this area?</FormLabel>
                     <FormControl>
                         <Slider
                             min={1}
@@ -146,7 +156,7 @@ export default function SurveyForm({ onSubmit }: SurveyFormProps) {
                 name="aiUsage"
                 render={({ field }) => (
                   <FormItem className="space-y-3">
-                    <FormLabel>How frequently do you use AI tools to assist your learning in this subject area?</FormLabel>
+                    <FormLabel>4. How frequently do you use AI tools to assist your learning in this subject area?</FormLabel>
                     <FormControl>
                       <RadioGroup
                         onValueChange={field.onChange}
@@ -189,7 +199,7 @@ export default function SurveyForm({ onSubmit }: SurveyFormProps) {
                 name="aiUsageReason"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>When you use AI tools to assist your learning in this subject area, what is the most frequent reason to use the AI tool?</FormLabel>
+                    <FormLabel>5. When you use AI tools to assist your learning in this subject area, what is the most frequent reason to use the AI tool?</FormLabel>
                     <FormControl>
                       <Textarea
                         placeholder="e.g., to summarize long texts, to check my grammar, to get ideas for a paper..."
