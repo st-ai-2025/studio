@@ -38,7 +38,7 @@ export default function SurveyForm({ onSubmit }: SurveyFormProps) {
   });
 
   return (
-    <div className="flex items-center justify-center px-4 py-12">
+    <div className="flex items-center justify-center px-4">
       <Card className="w-full max-w-lg shadow-xl">
         <CardHeader>
           <div className="flex justify-between items-start">
