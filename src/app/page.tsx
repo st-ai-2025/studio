@@ -2,14 +2,11 @@
 "use client";
 
 import { useEffect } from "react";
-import { usePathname, useRouter } from "next/navigation";
-import { useAuth } from "@/hooks/use-auth";
+import { useRouter } from "next/navigation";
 import { Logo } from "@/components/Logo";
 
 export default function Home() {
-  const { user, loading } = useAuth();
   const router = useRouter();
-  const bypassAuth = process.env.NEXT_PUBLIC_BYPASS_AUTH === 'true';
 
   useEffect(() => {
     // Force redirect to login page to restart the session.
