@@ -3,10 +3,9 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Logo } from "@/components/Logo";
 
 function GoogleIcon() {
@@ -20,7 +19,6 @@ function GoogleIcon() {
 export function LoginComponent() {
   const { user, loading, signInWithGoogle } = useAuth();
   const router = useRouter();
-  const bypassAuth = process.env.NEXT_PUBLIC_BYPASS_AUTH === 'true';
 
   useEffect(() => {
     if (!loading && user) {
@@ -29,11 +27,7 @@ export function LoginComponent() {
   }, [user, loading, router]);
 
   const handleSignIn = () => {
-    if (bypassAuth) {
-      router.replace("/");
-    } else {
-      signInWithGoogle();
-    }
+    signInWithGoogle();
   }
 
   return (
@@ -45,7 +39,7 @@ export function LoginComponent() {
           </div>
           <CardTitle className="text-2xl font-headline">Welcome to AI Tutoring Research</CardTitle>
           <CardDescription>
-            {bypassAuth ? "Preview mode is active. Click below to continue." : "Sign in to begin your personalized chat experience."}
+            Sign in to begin your personalized chat experience.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -55,7 +49,7 @@ export function LoginComponent() {
             className="w-full bg-white text-black hover:bg-gray-100"
             variant="outline"
           >
-            {bypassAuth ? "Continue as Preview User" : <><GoogleIcon /> Sign in with Google</> }
+            <GoogleIcon /> Sign in with Google
           </Button>
         </CardContent>
         <CardFooter className="flex justify-center text-xs">
