@@ -112,7 +112,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
             await createUserProfile(user); 
             const sessionRef = doc(db, "users", user.uid, "sessions", sessionId);
             await setDoc(sessionRef, {
-                surveyData,
+                surveyData: surveyData,
                 startTime: serverTimestamp(),
             });
             setIsFirstMessage(false);

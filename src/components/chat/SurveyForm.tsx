@@ -10,7 +10,6 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import { Textarea } from "@/components/ui/textarea";
 import { Logo } from "@/components/Logo";
 import { useAuth } from "@/hooks/use-auth";
 import { LogOut } from "lucide-react";
@@ -20,7 +19,6 @@ const surveySchema = z.object({
   subject: z.enum(["math", "science", "language", "social studies"], { required_error: "Please select a subject." }),
   interestLevel: z.array(z.number()).min(1).max(1).transform(arr => arr[0]),
   aiUsage: z.enum(["daily", "weekly", "monthly", "rarely"], { required_error: "Please select your AI usage frequency." }),
-  aiUsageReason: z.string().min(1, { message: "Please provide a reason." }),
 });
 
 type SurveyFormProps = {
@@ -33,7 +31,6 @@ export default function SurveyForm({ onSubmit }: SurveyFormProps) {
     resolver: zodResolver(surveySchema),
     defaultValues: {
       interestLevel: [3],
-      aiUsageReason: "",
     },
   });
 
@@ -188,23 +185,6 @@ export default function SurveyForm({ onSubmit }: SurveyFormProps) {
                           <FormLabel className="font-normal">Rarely</FormLabel>
                         </FormItem>
                       </RadioGroup>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="aiUsageReason"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>5. When you use AI tools to assist your learning in this subject area, what is the most frequent reason to use the AI tool?</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="e.g., to summarize long texts, to check my grammar, to get ideas for a paper..."
-                        {...field}
-                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
