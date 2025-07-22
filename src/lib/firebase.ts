@@ -1,7 +1,7 @@
 
 import { getApp, getApps, initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, connectAuthEmulator } from "firebase/auth";
-import { getFirestore, connectFirestoreEmulator, doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import { getFirestore, doc, setDoc, serverTimestamp } from "firebase/firestore";
 import type { User } from "firebase/auth";
 
 
@@ -37,17 +37,5 @@ export const createUserProfile = async (user: User) => {
     throw error;
   }
 };
-
-
-// If you want to use the local emulators, you can uncomment the following lines
-// and set the environment variables in a .env.local file.
-// if (process.env.NEXT_PUBLIC_USE_EMULATORS === 'true') {
-//   if (process.env.NEXT_PUBLIC_AUTH_EMULATOR_HOST) {
-//     connectAuthEmulator(auth, `http://${process.env.NEXT_PUBLIC_AUTH_EMULATOR_HOST}`);
-//   }
-//   if (process.env.NEXT_PUBLIC_FIRESTORE_EMULATOR_HOST) {
-//     connectFirestoreEmulator(db, ...process.env.NEXT_PUBLIC_FIRESTORE_EMULATOR_HOST.split(":"));
-//   }
-// }
 
 export { app, auth, db, googleProvider };
