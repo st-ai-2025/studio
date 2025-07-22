@@ -36,7 +36,7 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="h-screen bg-background">
+    <div className="h-screen bg-background flex items-center justify-center">
       {!surveyData ? (
         <SurveyForm onSubmit={handleSurveySubmit} />
       ) : (
