@@ -32,7 +32,7 @@ export async function personalizedChat(input: PersonalizedChatInput): Promise<Pe
 
 const prompt = ai.definePrompt({
   name: 'personalizedChatPrompt',
-  input: {schema: PersonalizedChatInputSchema},
+  input: {schema: z.any()},
   output: {schema: PersonalizedChatOutputSchema},
   prompt: `You are a helpful and engaging AI tutor for high school students. The student should have already
   provided the subject area they want tutoring for, and the expected year of high school graduation. So tailor your
@@ -71,10 +71,10 @@ const prompt = ai.definePrompt({
 
   Conversation History:
   {{#each history}}
-  {{#if (eq role 'user')}}
+  {{#if isUser}}
   User: {{{content}}}
   {{/if}}
-  {{#if (eq role 'assistant')}}
+  {{#if isAssistant}}
   Assistant: {{{content}}}
   {{/if}}
   {{/each}}
@@ -89,7 +89,16 @@ const personalizedChatFlow = ai.defineFlow(
     outputSchema: PersonalizedChatOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
+    const historyWithRoles = input.history.map(message => ({
+      ...message,
+      isUser: message.role === 'user',
+      isAssistant: message.role === 'assistant',
+    }));
+    
+    const {output} = await prompt({
+        ...input,
+        history: historyWithRoles,
+    });
     return output!;
   }
 );
