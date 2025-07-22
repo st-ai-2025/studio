@@ -1,6 +1,7 @@
 import type {Metadata} from 'next';
 import './globals.css';
 import { Providers } from '@/components/Providers';
+import "katex/dist/katex.min.css";
 
 export const metadata: Metadata = {
   title: 'FormFlow AI Chat',
