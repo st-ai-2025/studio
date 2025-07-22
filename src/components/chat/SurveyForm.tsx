@@ -46,7 +46,7 @@ export default function SurveyForm({ onSubmit }: SurveyFormProps) {
               <div className="mx-auto mb-4 inline-block">
                   <Logo />
               </div>
-              <CardTitle className="text-2xl font-headline">Please answer a few questions about you</CardTitle>
+              <CardTitle className="text-2xl font-headline">Welcome to AI Tutoring Research</CardTitle>
               <CardDescription className="pt-2">
                 Help us personalize your experience by answering these questions.
               </CardDescription>
@@ -64,7 +64,7 @@ export default function SurveyForm({ onSubmit }: SurveyFormProps) {
                 name="graduationYear"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>1. High school graduation year</FormLabel>
+                    <FormLabel>1. Your high school graduation year</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
