@@ -186,18 +186,19 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
             {messages.map((msg, index) => (
               <ChatMessage key={index} message={msg} />
             ))}
-            {isResponding && messages.length > 0 && (
-                <div className="flex items-start gap-4">
+            {isResponding && (
+                <div className="flex items-center gap-2">
                     <Avatar className="h-10 w-10 border">
                         <AvatarFallback><Bot className="h-5 w-5"/></AvatarFallback>
                     </Avatar>
-                    <div className="grid gap-1">
-                        <Skeleton className="h-5 w-24" />
-                        <Skeleton className="h-12 w-64" />
+                    <div className="flex items-center gap-1.5">
+                        <span className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground [animation-delay:-0.3s]" />
+                        <span className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground [animation-delay:-0.15s]" />
+                        <span className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground" />
                     </div>
                 </div>
             )}
-             {messages.length === 0 && (
+             {messages.length === 0 && isResponding && (
                  <div className="flex items-start gap-4">
                     <Avatar className="h-10 w-10 border">
                         <AvatarFallback><Bot className="h-5 w-5"/></AvatarFallback>
