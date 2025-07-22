@@ -12,18 +12,9 @@ export default function Home() {
   const bypassAuth = process.env.NEXT_PUBLIC_BYPASS_AUTH === 'true';
 
   useEffect(() => {
-    if (!loading) {
-      if (user) {
-        router.replace("/chat");
-      } else {
-        if (bypassAuth) {
-            router.replace("/login");
-        } else {
-            router.replace("/login");
-        }
-      }
-    }
-  }, [user, loading, router, bypassAuth]);
+    // Force redirect to login page to restart the session.
+    router.replace("/login");
+  }, [router]);
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background">
