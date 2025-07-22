@@ -42,7 +42,7 @@ export default function SurveyForm({ onSubmit }: SurveyFormProps) {
       <Card className="w-full max-w-lg shadow-xl">
         <CardHeader>
           <div className="flex justify-between items-start">
-            <div className="text-center flex-grow">
+            <div className="flex-grow text-center">
               <div className="mx-auto mb-4 inline-block">
                   <Logo />
               </div>
