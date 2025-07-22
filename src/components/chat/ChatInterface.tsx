@@ -65,7 +65,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
     const generateIntro = async () => {
       setIsResponding(true);
       try {
-        const res = await generateContextAwareIntroduction({ surveyResponses: JSON.stringify(surveyData) });
+        const res = await generateContextAwareIntroduction({ surveyResponses: surveyData });
         if (res.introduction) {
           const introMsg = {
             content: res.introduction,
@@ -186,10 +186,15 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
               <ChatMessage key={index} message={msg} />
             ))}
             {isResponding && (
-                <div className="flex items-center gap-2">
+                <div className="flex items-start gap-4">
                     <Avatar className="h-10 w-10 border">
                         <AvatarFallback><Bot className="h-5 w-5"/></AvatarFallback>
                     </Avatar>
+                    <div className="flex items-center gap-2 pt-3">
+                      <div className="h-2 w-2 rounded-full bg-muted-foreground animate-bounce [animation-delay:-0.3s]"></div>
+                      <div className="h-2 w-2 rounded-full bg-muted-foreground animate-bounce [animation-delay:-0.15s]"></div>
+                      <div className="h-2 w-2 rounded-full bg-muted-foreground animate-bounce"></div>
+                    </div>
                 </div>
             )}
           </div>
