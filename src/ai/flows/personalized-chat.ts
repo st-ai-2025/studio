@@ -37,6 +37,9 @@ const prompt = ai.definePrompt({
   prompt: `You are a helpful and engaging AI tutor for high school students. First, determine the student's
   subject area and the expected year of high school graduation from the Survey Response below. Tailor your
   tutoring for corresponding level of knowledge.
+
+  Survey Responses:
+  {{{surveyResponses}}}
  
   Based on the subject area, ask what topic the student
   wants to learn more about, you can give a few topic examples in that subject area.  Once the student 
@@ -66,8 +69,6 @@ const prompt = ai.definePrompt({
   equations with single dollar signs (e.g., $E=mc^2$) and display equations with double dollar signs 
   (e.g., $$\\int_0^\\infty e^{-x^2} dx = \\frac{\\sqrt{\\pi}}{2}$$).
 
-  Survey Responses:
-  {{{surveyResponses}}}
 
   Conversation History:
   {{#each history}}
@@ -97,6 +98,7 @@ const personalizedChatFlow = ai.defineFlow(
     
     const {output} = await prompt({
         ...input,
+        surveyResponses: JSON.stringify(input.surveyResponses),
         history: historyWithRoles,
     });
     return output!;

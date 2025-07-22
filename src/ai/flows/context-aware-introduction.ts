@@ -12,7 +12,7 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const ContextAwareIntroductionInputSchema = z.object({
-  surveyResponses: z.string().describe("The user's responses from the pre-chat survey, as a JSON string."),
+  surveyResponses: z.record(z.string(), z.any()).describe("The user's responses from the pre-chat survey."),
 });
 export type ContextAwareIntroductionInput = z.infer<typeof ContextAwareIntroductionInputSchema>;
 
@@ -27,7 +27,9 @@ export async function generateContextAwareIntroduction(input: ContextAwareIntrod
 
 const prompt = ai.definePrompt({
   name: 'contextAwareIntroductionPrompt',
-  input: {schema: ContextAwareIntroductionInputSchema},
+  input: {schema: z.object({
+    surveyResponses: z.string(),
+  })},
   output: {schema: ContextAwareIntroductionOutputSchema},
   prompt: `You are a friendly and welcoming AI tutor for high school students. Based on the following survey responses, 
   generate a short, one-sentence personalized welcome message, in the following form:
@@ -48,7 +50,9 @@ const contextAwareIntroductionFlow = ai.defineFlow(
     outputSchema: ContextAwareIntroductionOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
+    const {output} = await prompt({
+      surveyResponses: JSON.stringify(input.surveyResponses),
+    });
     return output!;
   }
 );
