@@ -159,7 +159,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
   };
   
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-screen flex-col w-[600px]">
       <header className="flex h-16 shrink-0 items-center justify-between border-b bg-card px-4 md:px-6">
         <div className="flex items-center gap-3">
           <Logo className="h-8 w-8"/>
