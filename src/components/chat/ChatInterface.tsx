@@ -11,6 +11,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { LogOut, Bot, Send, RefreshCw } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -200,7 +210,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
           </div>
         </ScrollArea>
       </main>
-      <footer className="shrink-0 border-t bg-card p-4">
+      <footer className="shrink-0 border-t bg-card p-4 space-y-4">
         <div className="relative">
           <Textarea
             placeholder="Type your message..."
@@ -223,6 +233,24 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
           >
             <Send className="h-5 w-5 text-primary-foreground" />
           </Button>
+        </div>
+        <div className="flex justify-center">
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline">End Session</Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>How to End Your Session</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    To conclude your session, tell your AI tutor "I am done". Then the AI tutor will ask you a few questions to assess your understanding of the topic before you can exit.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogAction>Got it</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
         </div>
       </footer>
     </div>
