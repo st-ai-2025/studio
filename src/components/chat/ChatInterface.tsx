@@ -19,6 +19,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { LogOut, Bot, Send, RefreshCw } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
