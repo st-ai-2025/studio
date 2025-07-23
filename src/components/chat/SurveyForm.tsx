@@ -182,7 +182,7 @@ export default function SurveyForm({ onSubmit }: SurveyFormProps) {
                           <FormControl>
                             <RadioGroupItem value="rarely" />
                           </FormControl>
-                          <FormLabel className="font-normal">Rarely</FormLabel>
+                          <FormLabel className="font-normal">Rarely/Never</FormLabel>
                         </FormItem>
                       </RadioGroup>
                     </FormControl>
