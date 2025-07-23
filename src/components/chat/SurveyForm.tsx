@@ -17,12 +17,12 @@ import { LogOut } from "lucide-react";
 const surveySchema = z.object({
   graduationYear: z.string({ required_error: "Please select a graduation year." }),
   subject: z.enum(["math", "science", "language", "social studies"], { required_error: "Please select a subject." }),
-  interestLevel: z.array(z.number()).min(1).max(1).transform(arr => arr[0]),
+  interestLevel: z.array(z.number()).min(1).max(1),
   aiUsage: z.enum(["daily", "weekly", "monthly", "rarely"], { required_error: "Please select your AI usage frequency." }),
 });
 
 type SurveyFormProps = {
-  onSubmit: (data: z.infer<typeof surveySchema>) => void;
+  onSubmit: (data: Record<string, any>) => void;
 };
 
 export default function SurveyForm({ onSubmit }: SurveyFormProps) {
@@ -33,6 +33,13 @@ export default function SurveyForm({ onSubmit }: SurveyFormProps) {
       interestLevel: [3],
     },
   });
+
+  const handleFormSubmit = (data: z.infer<typeof surveySchema>) => {
+    onSubmit({
+      ...data,
+      interestLevel: data.interestLevel[0],
+    });
+  };
 
   return (
     <div className="flex items-center justify-center px-4">
@@ -55,7 +62,7 @@ export default function SurveyForm({ onSubmit }: SurveyFormProps) {
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-8">
               <FormField
                 control={form.control}
                 name="graduationYear"
