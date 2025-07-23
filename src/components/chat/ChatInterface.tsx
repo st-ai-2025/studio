@@ -46,15 +46,10 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
   const [isResponding, setIsResponding] = useState(false);
   const [isFirstMessage, setIsFirstMessage] = useState(true);
   const [sessionId, setSessionId] = useState<string | null>(null);
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
-    if (scrollAreaRef.current) {
-        const viewport = scrollAreaRef.current.querySelector('div[data-radix-scroll-area-viewport]');
-        if (viewport) {
-            viewport.scrollTop = viewport.scrollHeight;
-        }
-    }
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   useEffect(() => {
@@ -190,7 +185,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
         </DropdownMenu>
       </header>
       <main className="flex-1">
-        <ScrollArea className="h-full" ref={scrollAreaRef}>
+        <ScrollArea className="h-full">
           <div className="p-4 md:p-6 space-y-6">
             {messages.map((msg, index) => (
               <ChatMessage key={index} message={msg} />
@@ -207,6 +202,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
                     </div>
                 </div>
             )}
+            <div ref={messagesEndRef} />
           </div>
         </ScrollArea>
       </main>
