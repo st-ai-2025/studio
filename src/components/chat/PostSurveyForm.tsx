@@ -23,8 +23,8 @@ export default function PostSurveyForm({ onSubmit }: PostSurveyFormProps) {
   const form = useForm<z.infer<typeof postSurveySchema>>({
     resolver: zodResolver(postSurveySchema),
     defaultValues: {
-      understandingChange: [2],
-      interestChange: [2],
+      understandingChange: [3],
+      interestChange: [3],
     },
   });
 
@@ -39,8 +39,8 @@ export default function PostSurveyForm({ onSubmit }: PostSurveyFormProps) {
                 <FormLabel>1. After this tutoring session, my understanding of this subject is:</FormLabel>
                 <FormControl>
                     <Slider
-                        min={0}
-                        max={4}
+                        min={1}
+                        max={5}
                         step={1}
                         defaultValue={field.value}
                         onValueChange={(value) => field.onChange(value)}
@@ -63,8 +63,8 @@ export default function PostSurveyForm({ onSubmit }: PostSurveyFormProps) {
                 <FormLabel>2. After this tutoring session, my level of interest in this subject is:</FormLabel>
                 <FormControl>
                     <Slider
-                        min={0}
-                        max={4}
+                        min={1}
+                        max={5}
                         step={1}
                         defaultValue={field.value}
                         onValueChange={(value) => field.onChange(value)}
