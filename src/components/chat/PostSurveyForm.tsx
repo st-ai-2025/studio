@@ -8,10 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 const postSurveySchema = z.object({
   feedback: z.string().min(10, { message: "Please provide at least 10 characters of feedback." }),
   interestChange: z.array(z.number()).min(1).max(1),
+  futureInterest: z.enum(["yes", "no", "not_sure"], { required_error: "Please select an option." }),
 });
 
 type PostSurveyFormProps = {
@@ -67,6 +69,42 @@ export default function PostSurveyForm({ onSubmit }: PostSurveyFormProps) {
                     <span>About the Same</span>
                     <span>Greatly Increased</span>
                 </div>
+                <FormMessage />
+                </FormItem>
+            )}
+        />
+        <FormField
+            control={form.control}
+            name="futureInterest"
+            render={({ field }) => (
+                <FormItem>
+                <FormLabel>3. Will you be interested in further exploring this subject using similar AI tutoring tools in the future?</FormLabel>
+                <FormControl>
+                      <RadioGroup
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        className="flex flex-col space-y-1"
+                      >
+                        <FormItem className="flex items-center space-x-3 space-y-0">
+                          <FormControl>
+                            <RadioGroupItem value="yes" />
+                          </FormControl>
+                          <FormLabel className="font-normal">Yes</FormLabel>
+                        </FormItem>
+                        <FormItem className="flex items-center space-x-3 space-y-0">
+                          <FormControl>
+                            <RadioGroupItem value="no" />
+                          </FormControl>
+                          <FormLabel className="font-normal">No</FormLabel>
+                        </FormItem>
+                        <FormItem className="flex items-center space-x-3 space-y-0">
+                          <FormControl>
+                            <RadioGroupItem value="not_sure" />
+                          </FormControl>
+                          <FormLabel className="font-normal">Not sure</FormLabel>
+                        </FormItem>
+                      </RadioGroup>
+                    </FormControl>
                 <FormMessage />
                 </FormItem>
             )}
