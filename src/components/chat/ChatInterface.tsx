@@ -143,12 +143,13 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
         });
         
         if (res.chatbotResponse) {
-            if (res.chatbotResponse.includes("[Before you exit, please take the survey by clicking the button below.]")) {
+            const trimmedResponse = res.chatbotResponse.trim();
+            if (trimmedResponse.includes("[Before you exit, please take the survey by clicking the button below.]")) {
               setShowPostSurveyButton(true);
             }
 
             const assistantMessage = {
-                content: res.chatbotResponse,
+                content: trimmedResponse,
                 role: 'assistant' as const,
                 userId: user.uid
             };
