@@ -12,6 +12,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 const postSurveySchema = z.object({
   feedback: z.string().min(10, { message: "Please provide at least 10 characters of feedback." }),
+  understandingChange: z.array(z.number()).min(1).max(1),
   interestChange: z.array(z.number()).min(1).max(1),
   futureInterest: z.enum(["yes", "no", "not_sure"], { required_error: "Please select an option." }),
 });
@@ -25,6 +26,7 @@ export default function PostSurveyForm({ onSubmit }: PostSurveyFormProps) {
     resolver: zodResolver(postSurveySchema),
     defaultValues: {
       feedback: "",
+      understandingChange: [2],
       interestChange: [2],
     },
   });
@@ -51,10 +53,34 @@ export default function PostSurveyForm({ onSubmit }: PostSurveyFormProps) {
         />
         <FormField
             control={form.control}
+            name="understandingChange"
+            render={({ field }) => (
+                <FormItem>
+                <FormLabel>2. After this tutoring session, my understanding of this subject is:</FormLabel>
+                <FormControl>
+                    <Slider
+                        min={0}
+                        max={4}
+                        step={1}
+                        defaultValue={field.value}
+                        onValueChange={(value) => field.onChange(value)}
+                    />
+                </FormControl>
+                <div className="flex justify-between text-sm text-muted-foreground">
+                    <span>Greatly Worsened</span>
+                    <span>About the Same</span>
+                    <span>Greatly Improved</span>
+                </div>
+                <FormMessage />
+                </FormItem>
+            )}
+        />
+        <FormField
+            control={form.control}
             name="interestChange"
             render={({ field }) => (
                 <FormItem>
-                <FormLabel>2. After this tutoring session, my level of interest in this subject is:</FormLabel>
+                <FormLabel>3. After this tutoring session, my level of interest in this subject is:</FormLabel>
                 <FormControl>
                     <Slider
                         min={0}
@@ -78,7 +104,7 @@ export default function PostSurveyForm({ onSubmit }: PostSurveyFormProps) {
             name="futureInterest"
             render={({ field }) => (
                 <FormItem>
-                <FormLabel>3. Will you be interested in further exploring this subject using similar AI tutoring tools in the future?</FormLabel>
+                <FormLabel>4. Will you be interested in further exploring this subject using similar AI tutoring tools in the future?</FormLabel>
                 <FormControl>
                       <RadioGroup
                         onValueChange={field.onChange}
@@ -114,3 +140,5 @@ export default function PostSurveyForm({ onSubmit }: PostSurveyFormProps) {
     </Form>
   );
 }
+
+    

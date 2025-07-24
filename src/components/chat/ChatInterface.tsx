@@ -177,8 +177,9 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
       return;
     }
     const surveyResponse = {
-        ...data,
-        interestChange: data.interestChange[0],
+      ...data,
+      interestChange: data.interestChange[0],
+      understandingChange: data.understandingChange[0],
     };
 
     try {
@@ -300,3 +301,5 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
     </div>
   );
 }
+
+    
