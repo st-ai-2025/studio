@@ -40,6 +40,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Logo } from "../Logo";
 import { db, createUserProfile } from "@/lib/firebase";
 import { addDoc, collection, serverTimestamp, doc, setDoc, updateDoc } from "firebase/firestore";
+import { useRouter } from "next/navigation";
 
 type ChatInterfaceProps = {
   surveyData: Record<string, any>;
@@ -49,6 +50,7 @@ type ChatInterfaceProps = {
 export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfaceProps) {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
+  const router = useRouter();
   const [messages, setMessages] = useState<Omit<Message, 'id' | 'timestamp'>[]>([]);
   const [input, setInput] = useState("");
   const [isResponding, setIsResponding] = useState(false);
@@ -191,7 +193,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
       });
       console.log("Post-chat survey submitted:", surveyResponse);
       setIsPostSurveyOpen(false); // Close dialog
-      onResetSurvey(); // Go back to the main survey page
+      router.push('/thank-you');
     } catch (error) {
       console.error("Error saving post-chat survey:", error);
       toast({ variant: "destructive", title: "Error", description: "Failed to save post-chat survey." });
