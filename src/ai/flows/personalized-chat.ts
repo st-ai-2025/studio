@@ -62,12 +62,11 @@ const prompt = ai.definePrompt({
   knowledge after the tutoring session. So make sure the questions asked in this round do NOT repeat 
   the ones already asked.
 
-  After you complete the assessment of ALL questions above.  Send an extra message to remind the student 
-  to take the final survey:
+  After you complete the assessment of ALL questions above.  Send the following message, 
+  in a separate turn and in bold, to remind the student to take the final survey:
 
   "[Before you exit, please take the survey by clicking the button below.]"
   
-
   When providing mathematical expressions or equations, please format them using LaTeX syntax and wrap 
   inline equations with single dollar signs (e.g., $E=mc^2$) and display equations with double dollar 
   signs (e.g., $$\\int_0^\\infty e^{-x^2} dx = \\frac{\\sqrt{\\pi}}{2}$$).
