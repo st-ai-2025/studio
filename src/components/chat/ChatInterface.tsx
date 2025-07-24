@@ -21,17 +21,25 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { LogOut, Bot, Send, RefreshCw } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ChatMessage from "./ChatMessage";
+import PostSurveyForm from "./PostSurveyForm";
 import { generateContextAwareIntroduction } from "@/ai/flows/context-aware-introduction";
 import { personalizedChat } from "@/ai/flows/personalized-chat";
 import type { Message } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { Logo } from "../Logo";
 import { db, createUserProfile } from "@/lib/firebase";
-import { addDoc, collection, serverTimestamp, doc, setDoc } from "firebase/firestore";
+import { addDoc, collection, serverTimestamp, doc, setDoc, updateDoc } from "firebase/firestore";
 
 type ChatInterfaceProps = {
   surveyData: Record<string, any>;
@@ -46,6 +54,8 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
   const [isResponding, setIsResponding] = useState(false);
   const [isFirstMessage, setIsFirstMessage] = useState(true);
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [showPostSurveyButton, setShowPostSurveyButton] = useState(false);
+  const [isPostSurveyOpen, setIsPostSurveyOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -54,7 +64,6 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
 
   useEffect(() => {
     if (user) {
-      // Generate a new session ID when the component mounts with a user
       const newSessionId = doc(collection(db, 'users', user.uid, 'sessions')).id;
       setSessionId(newSessionId);
     }
@@ -111,7 +120,6 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
     setIsResponding(true);
 
     try {
-        // On the first message, create the user profile and the session document
         if (isFirstMessage) {
             await createUserProfile(user); 
             const sessionRef = doc(db, "users", user.uid, "sessions", sessionId);
@@ -124,19 +132,21 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
 
         const messagesCollectionRef = collection(db, "users", user.uid, "sessions", sessionId, "messages");
         
-        // Save user message to Firestore
         await addDoc(messagesCollectionRef, {
             ...userMessage,
             timestamp: serverTimestamp(),
         });
         
-        // Get AI response
         const res = await personalizedChat({ 
           surveyResponses: surveyData, 
           history: newMessages.map(({ role, content }) => ({ role, content })) 
         });
         
         if (res.chatbotResponse) {
+            if (res.chatbotResponse.includes("[Before you exit, please take the survey by clicking the button below.]")) {
+              setShowPostSurveyButton(true);
+            }
+
             const assistantMessage = {
                 content: res.chatbotResponse,
                 role: 'assistant' as const,
@@ -144,7 +154,6 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
             };
             setMessages(prev => [...prev, assistantMessage]);
             
-            // Save assistant message to Firestore
             await addDoc(messagesCollectionRef, {
               ...assistantMessage,
               timestamp: serverTimestamp(),
@@ -162,6 +171,26 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
     }
   };
   
+  const handlePostSurveySubmit = async (data: Record<string, any>) => {
+    if (!user || !sessionId) {
+      toast({ variant: "destructive", title: "Error", description: "Cannot save survey. User or session is not initialized." });
+      return;
+    }
+    try {
+      const sessionRef = doc(db, "users", user.uid, "sessions", sessionId);
+      await updateDoc(sessionRef, {
+        postSurveyResponse: data,
+        endTime: serverTimestamp()
+      });
+      console.log("Post-chat survey submitted:", data);
+      setIsPostSurveyOpen(false); // Close dialog
+      onResetSurvey(); // Go back to the main survey page
+    } catch (error) {
+      console.error("Error saving post-chat survey:", error);
+      toast({ variant: "destructive", title: "Error", description: "Failed to save post-chat survey." });
+    }
+  };
+
   return (
     <div className="flex h-screen flex-col w-[600px]">
       <header className="flex h-16 shrink-0 items-center justify-between border-b bg-card px-4 md:px-6">
@@ -231,22 +260,36 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
           </Button>
         </div>
         <div className="flex justify-center">
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="outline">End Session</Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>How to End Your Session</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    To conclude your session, tell your AI tutor "I am done". Then the AI tutor will ask you a few questions to assess your understanding of the topic before you can exit.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogAction>Got it</AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+            {showPostSurveyButton ? (
+                 <Dialog open={isPostSurveyOpen} onOpenChange={setIsPostSurveyOpen}>
+                    <DialogTrigger asChild>
+                        <Button variant="outline">Take Survey</Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                        <DialogHeader>
+                        <DialogTitle>Post-Session Survey</DialogTitle>
+                        </DialogHeader>
+                        <PostSurveyForm onSubmit={handlePostSurveySubmit} />
+                    </DialogContent>
+                </Dialog>
+            ) : (
+                <AlertDialog>
+                <AlertDialogTrigger asChild>
+                    <Button variant="outline">End Session</Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                    <AlertDialogTitle>How to End Your Session</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        To conclude your session, tell your AI tutor "I am done". Then the AI tutor will ask you a few questions to assess your understanding of the topic before you can exit.
+                    </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                    <AlertDialogAction>Got it</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+                </AlertDialog>
+            )}
         </div>
       </footer>
     </div>
