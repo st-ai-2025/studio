@@ -6,12 +6,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 const postSurveySchema = z.object({
-  feedback: z.string().min(10, { message: "Please provide at least 10 characters of feedback." }),
   understandingChange: z.array(z.number()).min(1).max(1),
   interestChange: z.array(z.number()).min(1).max(1),
   futureInterest: z.enum(["yes", "no", "not_sure"], { required_error: "Please select an option." }),
@@ -25,7 +23,6 @@ export default function PostSurveyForm({ onSubmit }: PostSurveyFormProps) {
   const form = useForm<z.infer<typeof postSurveySchema>>({
     resolver: zodResolver(postSurveySchema),
     defaultValues: {
-      feedback: "",
       understandingChange: [2],
       interestChange: [2],
     },
@@ -35,28 +32,11 @@ export default function PostSurveyForm({ onSubmit }: PostSurveyFormProps) {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <FormField
-          control={form.control}
-          name="feedback"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>1. How do you like the tutoring session?</FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder="Tell us about your experience..."
-                  className="resize-none"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
             control={form.control}
             name="understandingChange"
             render={({ field }) => (
                 <FormItem>
-                <FormLabel>2. After this tutoring session, my understanding of this subject is:</FormLabel>
+                <FormLabel>1. After this tutoring session, my understanding of this subject is:</FormLabel>
                 <FormControl>
                     <Slider
                         min={0}
@@ -80,7 +60,7 @@ export default function PostSurveyForm({ onSubmit }: PostSurveyFormProps) {
             name="interestChange"
             render={({ field }) => (
                 <FormItem>
-                <FormLabel>3. After this tutoring session, my level of interest in this subject is:</FormLabel>
+                <FormLabel>2. After this tutoring session, my level of interest in this subject is:</FormLabel>
                 <FormControl>
                     <Slider
                         min={0}
@@ -104,7 +84,7 @@ export default function PostSurveyForm({ onSubmit }: PostSurveyFormProps) {
             name="futureInterest"
             render={({ field }) => (
                 <FormItem>
-                <FormLabel>4. Will you be interested in further exploring this subject using similar AI tutoring tools in the future?</FormLabel>
+                <FormLabel>3. Will you be interested in further exploring this subject using similar AI tutoring tools in the future?</FormLabel>
                 <FormControl>
                       <RadioGroup
                         onValueChange={field.onChange}
@@ -140,5 +120,3 @@ export default function PostSurveyForm({ onSubmit }: PostSurveyFormProps) {
     </Form>
   );
 }
-
-    
