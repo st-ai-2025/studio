@@ -69,9 +69,7 @@ const prompt = ai.definePrompt({
   and wrap inline equations with single dollar signs (e.g., $E=mc^2$) and display equations with 
   double dollar signs (e.g., $$\int_0^\infty e^{-x^2} dx = \frac{\sqrt{\pi}}{2}$$). The single or 
   double dollar signs should always be in pairs. For example, absolutely avoid examples that miss one side
-  of the $ or RR
-
-  like '$-sin(x)', '$$-cos(x) + C', etc.
+  of the $ or $$, e.g.,'$-sin(x)', '$$-cos(x) + C', etc.
 
   # Ending tutoring session
   During any point of the conversation, if the student states 'I am done', it indicates that they 
