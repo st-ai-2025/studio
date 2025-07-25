@@ -46,17 +46,17 @@ export default function PostSurveyForm({ onSubmit }: PostSurveyFormProps) {
                             defaultValue={field.value}
                             onValueChange={(value) => field.onChange(value)}
                         />
-                         <div className="absolute top-1/2 -translate-y-1/2 w-full h-full flex justify-between items-center px-[10px] pointer-events-none">
+                        <div className="absolute top-1/2 -translate-y-1/2 w-full h-full flex justify-between items-center px-[10px] pointer-events-none">
                             {[...Array(5)].map((_, i) => (
                                 <div key={i} className="h-2 w-2 rounded-full bg-slate-200" />
                             ))}
                         </div>
                     </div>
                 </FormControl>
-                <div className="flex justify-between text-sm text-muted-foreground">
-                    <span>Greatly Worsened</span>
-                    <span>About the Same</span>
-                    <span>Greatly Improved</span>
+                <div className="grid grid-cols-3 text-sm text-muted-foreground">
+                    <span className="text-left w-1/3">Greatly Worsened</span>
+                    <span className="text-center w-1/3">Same</span>
+                    <span className="text-right w-1/3">Greatly Improved</span>
                 </div>
                 <FormMessage />
                 </FormItem>
@@ -84,10 +84,10 @@ export default function PostSurveyForm({ onSubmit }: PostSurveyFormProps) {
                         </div>
                     </div>
                 </FormControl>
-                <div className="flex justify-between text-sm text-muted-foreground">
-                    <span>Greatly Decreased</span>
-                    <span>About the Same</span>
-                    <span>Greatly Increased</span>
+                <div className="grid grid-cols-3 text-sm text-muted-foreground">
+                    <span className="text-left w-1/3">Greatly Decreased</span>
+                    <span className="text-center w-1/3">Same</span>
+                    <span className="text-right w-1/3">Greatly Increased</span>
                 </div>
                 <FormMessage />
                 </FormItem>

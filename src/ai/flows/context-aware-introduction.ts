@@ -31,15 +31,13 @@ const prompt = ai.definePrompt({
     surveyResponses: z.string(),
   })},
   output: {schema: ContextAwareIntroductionOutputSchema},
-  prompt: `You are a friendly and welcoming AI tutor for high school students. Based on the following survey responses, 
-  generate a short, one-sentence personalized welcome message, in the following form:
+  prompt: `You are a friendly and welcoming AI tutor for high school students. 
+  As an introduction, generate a welcome message, exactly as the following:
 
-  "Hi there! I am your AI tutor. Super excited that you want to have a discussion with me today! 
-  Please be aware that I am part of a science research project.  So I may ask you some questions during our 
-  session for that purpose.  Please do NOT provide any personal information, other than the ones I ask for. 
-  Are you ready to dive in?"
-
-  Survey Responses:{{{surveyResponses}}}
+  "Hi there! I am your AI tutor 🤓. Super excited that you want to have a discussion with me today! 
+  Please be aware that I am part of a science research project. Our discussion should take 
+  **at least 15 minutes** to be effective.  As a reminder, please do NOT provide any personal 
+  information during our chat. Are you ready to dive in?"
 `,
 });
 

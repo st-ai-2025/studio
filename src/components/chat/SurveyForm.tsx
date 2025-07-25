@@ -153,10 +153,10 @@ export default function SurveyForm({ onSubmit }: SurveyFormProps) {
                         </div>
                       </div>
                     </FormControl>
-                    <div className="flex justify-between text-sm text-muted-foreground">
-                        <span>Not Interested</span>
-                        <span>Neutral</span>
-                        <span>Extremely Interested</span>
+                    <div className="grid grid-cols-3 text-sm text-muted-foreground">
+                      <span className="text-left w-1/3">Not Interested</span>
+                      <span className="text-center w-1/3">Neutral</span>
+                      <span className="text-right w-1/3">Extremely Interested</span>
                     </div>
                     <FormMessage />
                   </FormItem>
