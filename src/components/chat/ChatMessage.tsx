@@ -7,7 +7,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Bot, User as UserIcon } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { formatMessage } from "@/lib/format";
+import Latex from "react-latex-next";
 
 type ChatMessageProps = {
   message: Omit<Message, 'id' | 'timestamp'>;
@@ -32,7 +32,7 @@ export default function ChatMessage({ message }: ChatMessageProps) {
         isUser ? "bg-primary text-primary-foreground" : "bg-card shadow-sm"
       )}>
         <CardContent className="p-3 whitespace-pre-wrap">
-          {formatMessage(message.content)}
+          <Latex>{message.content}</Latex>
         </CardContent>
       </Card>
       {isUser && (
