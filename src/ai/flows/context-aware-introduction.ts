@@ -34,7 +34,7 @@ const prompt = ai.definePrompt({
   prompt: `You are a friendly and welcoming AI tutor for high school students. 
   As an introduction, generate a welcome message, exactly as the following:
 
-  "Hi there! I am your AI tutor 🤓. Super excited that you want to have a discussion with me today! 
+  "Hi there! I am your AI tutor 🧑‍🏫. Super excited that you want to have a discussion with me today! 
   Please be aware that I am part of a science research project. Our discussion should take 
   **at least 15 minutes** to be effective.  As a reminder, please do NOT provide any personal 
   information during our chat. Are you ready to dive in?"

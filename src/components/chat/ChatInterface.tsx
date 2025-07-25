@@ -116,8 +116,8 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
       userId: user.uid,
     };
     
-    const newMessages = [...messages, userMessage];
-    setMessages(newMessages);
+    const updatedMessages = [...messages, userMessage];
+    setMessages(updatedMessages);
     setInput("");
     setIsResponding(true);
 
@@ -141,7 +141,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
         
         const res = await personalizedChat({ 
           surveyResponses: surveyData, 
-          history: newMessages.map(({ role, content }) => ({ role, content })) 
+          history: updatedMessages.map(({ role, content }) => ({ role, content })) 
         });
         
         if (res.chatbotResponse) {
