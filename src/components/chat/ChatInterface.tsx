@@ -65,11 +65,14 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const getElapsedMinutes = () => {
-    if (!chatStartTime) return 0;
+  const getElapsedTime = () => {
+    if (!chatStartTime) return { minutes: 0, seconds: 0 };
     const now = new Date();
     const diffMs = now.getTime() - chatStartTime.getTime();
-    return Math.floor(diffMs / 60000);
+    const totalSeconds = Math.floor(diffMs / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return { minutes, seconds };
   };
 
   useEffect(() => {
@@ -309,7 +312,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
                     </AlertDialogDescription>
                     {chatStartTime && (
                         <div className="mt-4 text-sm text-foreground p-3 bg-secondary rounded-md">
-                            You have only used the tutoring chatbot for {getElapsedMinutes()} minutes. To make your data useful for the research, it is recommended that you spend at least 15 minutes in the chat.
+                            You have only used the tutoring chatbot for {getElapsedTime().minutes} minutes {getElapsedTime().seconds} seconds. To make your data useful for the research, it is recommended that you spend at least 15 minutes in the chat.
                         </div>
                     )}
                   </AlertDialogHeader>
@@ -324,3 +327,5 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
     </div>
   );
 }
+
+    
