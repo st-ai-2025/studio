@@ -109,7 +109,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
         return;
     }
 
-    const userMessageContent = input;
+    const userMessageContent = input.trim();
     const userMessage = {
       content: userMessageContent,
       role: 'user' as const,
@@ -174,7 +174,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
     }
   };
   
-  const handlePostSurveySubmit = async (data: Record<string, any>) => {
+  const handlePostSurveySubmit = (data: Record<string, any>) => {
     if (!user || !sessionId) {
       toast({ variant: "destructive", title: "Error", description: "Cannot save survey. User or session is not initialized." });
       return;
@@ -187,7 +187,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
 
     try {
       const sessionRef = doc(db, "users", user.uid, "sessions", sessionId);
-      await updateDoc(sessionRef, {
+      updateDoc(sessionRef, {
         postSurveyResponse: surveyResponse,
         endTime: serverTimestamp()
       });
