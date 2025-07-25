@@ -38,13 +38,21 @@ export default function PostSurveyForm({ onSubmit }: PostSurveyFormProps) {
                 <FormItem>
                 <FormLabel>1. After this tutoring session, my understanding of this subject is:</FormLabel>
                 <FormControl>
-                    <Slider
-                        min={1}
-                        max={5}
-                        step={1}
-                        defaultValue={field.value}
-                        onValueChange={(value) => field.onChange(value)}
-                    />
+                    <div className="relative pt-2">
+                        <Slider
+                            min={1}
+                            max={5}
+                            step={1}
+                            defaultValue={field.value}
+                            onValueChange={(value) => field.onChange(value)}
+                            className="py-2"
+                        />
+                         <div className="absolute top-0 w-full h-full flex justify-between items-center -z-10 px-[10px]">
+                            {[...Array(5)].map((_, i) => (
+                                <div key={i} className="h-2 w-2 rounded-full bg-muted" />
+                            ))}
+                        </div>
+                    </div>
                 </FormControl>
                 <div className="flex justify-between text-sm text-muted-foreground">
                     <span>Greatly Worsened</span>
@@ -61,14 +69,22 @@ export default function PostSurveyForm({ onSubmit }: PostSurveyFormProps) {
             render={({ field }) => (
                 <FormItem>
                 <FormLabel>2. After this tutoring session, my level of interest in this subject is:</FormLabel>
-                <FormControl>
-                    <Slider
-                        min={1}
-                        max={5}
-                        step={1}
-                        defaultValue={field.value}
-                        onValueChange={(value) => field.onChange(value)}
-                    />
+                 <FormControl>
+                    <div className="relative pt-2">
+                        <Slider
+                            min={1}
+                            max={5}
+                            step={1}
+                            defaultValue={field.value}
+                            onValueChange={(value) => field.onChange(value)}
+                             className="py-2"
+                        />
+                        <div className="absolute top-0 w-full h-full flex justify-between items-center -z-10 px-[10px]">
+                            {[...Array(5)].map((_, i) => (
+                                <div key={i} className="h-2 w-2 rounded-full bg-muted" />
+                            ))}
+                        </div>
+                    </div>
                 </FormControl>
                 <div className="flex justify-between text-sm text-muted-foreground">
                     <span>Greatly Decreased</span>
