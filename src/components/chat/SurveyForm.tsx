@@ -147,9 +147,9 @@ export default function SurveyForm({ onSubmit }: SurveyFormProps) {
                             onValueChange={(value) => field.onChange(value)}
                             className="py-2"
                         />
-                         <div className="absolute top-0 w-full h-full flex justify-between items-center -z-10 px-[10px]">
+                         <div className="absolute top-0 w-full h-full flex justify-between items-center px-[10px]">
                             {[...Array(5)].map((_, i) => (
-                                <div key={i} className="h-2 w-2 rounded-full bg-muted" />
+                                <div key={i} className="h-2 w-2 rounded-full bg-slate-200" />
                             ))}
                         </div>
                       </div>
