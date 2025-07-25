@@ -38,7 +38,7 @@ export default function PostSurveyForm({ onSubmit }: PostSurveyFormProps) {
                 <FormItem>
                 <FormLabel>1. After this tutoring session, my understanding of this subject is:</FormLabel>
                 <FormControl>
-                    <div className="relative pt-2">
+                    <div className="relative">
                         <Slider
                             min={1}
                             max={5}
@@ -46,7 +46,7 @@ export default function PostSurveyForm({ onSubmit }: PostSurveyFormProps) {
                             defaultValue={field.value}
                             onValueChange={(value) => field.onChange(value)}
                         />
-                         <div className="absolute inset-y-0 w-full h-full flex justify-between items-center px-[10px] pointer-events-none">
+                         <div className="absolute top-1/2 -translate-y-1/2 w-full h-full flex justify-between items-center px-[10px] pointer-events-none">
                             {[...Array(5)].map((_, i) => (
                                 <div key={i} className="h-2 w-2 rounded-full bg-slate-200" />
                             ))}
@@ -69,7 +69,7 @@ export default function PostSurveyForm({ onSubmit }: PostSurveyFormProps) {
                 <FormItem>
                 <FormLabel>2. After this tutoring session, my level of interest in this subject is:</FormLabel>
                  <FormControl>
-                    <div className="relative pt-2">
+                    <div className="relative">
                         <Slider
                             min={1}
                             max={5}
@@ -77,7 +77,7 @@ export default function PostSurveyForm({ onSubmit }: PostSurveyFormProps) {
                             defaultValue={field.value}
                             onValueChange={(value) => field.onChange(value)}
                         />
-                        <div className="absolute inset-y-0 w-full h-full flex justify-between items-center px-[10px] pointer-events-none">
+                        <div className="absolute top-1/2 -translate-y-1/2 w-full h-full flex justify-between items-center px-[10px] pointer-events-none">
                             {[...Array(5)].map((_, i) => (
                                 <div key={i} className="h-2 w-2 rounded-full bg-slate-200" />
                             ))}
