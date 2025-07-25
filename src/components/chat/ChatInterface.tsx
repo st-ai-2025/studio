@@ -302,20 +302,20 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
                     <Button variant="outline">End Session</Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
-                    <AlertDialogHeader>
+                  <AlertDialogHeader>
                     <AlertDialogTitle>How to End Your Session</AlertDialogTitle>
                     <AlertDialogDescription>
-                        To conclude your session, tell your AI tutor "I am done". The AI tutor will then ask you a few questions to assess your understanding of the topic before you can exit.
-                        {chatStartTime && (
-                            <div className="mt-4 text-sm text-foreground p-3 bg-secondary rounded-md">
-                                You have only used the tutoring chatbot for {getElapsedMinutes()} minutes. To make your data useful for the research, it is recommended that you spend at least 15 minutes in the chat.
-                            </div>
-                        )}
+                      To conclude your session, tell your AI tutor "I am done". The AI tutor will then ask you a few questions to assess your understanding of the topic before you can exit.
                     </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
+                    {chatStartTime && (
+                        <div className="mt-4 text-sm text-foreground p-3 bg-secondary rounded-md">
+                            You have only used the tutoring chatbot for {getElapsedMinutes()} minutes. To make your data useful for the research, it is recommended that you spend at least 15 minutes in the chat.
+                        </div>
+                    )}
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
                     <AlertDialogAction>Got it</AlertDialogAction>
-                    </AlertDialogFooter>
+                  </AlertDialogFooter>
                 </AlertDialogContent>
                 </AlertDialog>
             )}
@@ -324,5 +324,3 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
     </div>
   );
 }
-
-    
