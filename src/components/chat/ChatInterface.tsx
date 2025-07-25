@@ -179,25 +179,32 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
       toast({ variant: "destructive", title: "Error", description: "Cannot save survey. User or session is not initialized." });
       return;
     }
+    
+    router.push('/thank-you');
+    setIsPostSurveyOpen(false);
+    
     const surveyResponse = {
       ...data,
       interestChange: data.interestChange[0],
       understandingChange: data.understandingChange[0],
     };
 
-    try {
-      const sessionRef = doc(db, "users", user.uid, "sessions", sessionId);
-      updateDoc(sessionRef, {
-        postSurveyResponse: surveyResponse,
-        endTime: serverTimestamp()
-      });
-      console.log("Post-chat survey submitted:", surveyResponse);
-      setIsPostSurveyOpen(false); // Close dialog
-      router.push('/thank-you');
-    } catch (error) {
-      console.error("Error saving post-chat survey:", error);
-      toast({ variant: "destructive", title: "Error", description: "Failed to save post-chat survey." });
+    const saveSurvey = async () => {
+      try {
+        const sessionRef = doc(db, "users", user.uid, "sessions", sessionId);
+        await updateDoc(sessionRef, {
+          postSurveyResponse: surveyResponse,
+          endTime: serverTimestamp()
+        });
+        console.log("Post-chat survey submitted:", surveyResponse);
+      } catch (error) {
+        console.error("Error saving post-chat survey:", error);
+        // We don't show a toast here because the user has already navigated away.
+        // The error is logged for debugging purposes.
+      }
     }
+
+    saveSurvey();
   };
 
   return (
