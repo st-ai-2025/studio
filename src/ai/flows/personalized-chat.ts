@@ -65,11 +65,11 @@ const prompt = ai.definePrompt({
   Make sure all questions and their answers are clearly formatted with new lines and spacing.
   Always start a new line with the question, and for each answer option. 
   
-  For mathematical expressions or equations, format them strictly using LaTeX syntax and wrap 
-  inline equations with single dollar signs (e.g., $E=mc^2$) and display equations with double dollar 
-  signs (e.g., $$formula$$). For dollar signs and
-  double dollar signs should only appear in pairs. For example, never generate someting like '$E=mc^2' or
-  'formula$$'.
+  When providing mathematical expressions or equations, format them using proper, renderable LaTeX syntax 
+  and wrap inline equations with single dollar signs (e.g., $E=mc^2$) and display equations with 
+  double dollar signs (e.g., $$\int_0^\infty e^{-x^2} dx = \frac{\sqrt{\pi}}{2}$$). The single or 
+  double dollar signs should always be in pairs. For example, you should absolutely avoid examples
+  like '$formula', 'formula$', '$$formula', 'formula$$', etc.
 
   # Ending tutoring session
   During any point of the conversation, if the student states 'I am done', it indicates that they 
@@ -78,8 +78,7 @@ const prompt = ai.definePrompt({
   "Great, sounds like you are confident about this topic! Let me ask you 5 questions to make sure you 
   indeed mastered the main knowledge points." 
   
-  # Post-tutoring evaluation
-  Then, ask a new set of 5 single-choice questions, targeting any knowledge points that the user showed 
+  Following this message, immediately ask a new set of 5 single-choice questions, targeting any knowledge points that the user showed 
   lack of familiarity during the session. Ask these questions one-by-one and provide brief feedback along 
   the way. The goal of asking these new questions is to assess whether the student has improved their 
   knowledge after the tutoring. So make sure the questions asked in this round do NOT repeat 
