@@ -16,7 +16,7 @@ import { LogOut } from "lucide-react";
 
 const surveySchema = z.object({
   graduationYear: z.string({ required_error: "Please select a graduation year." }),
-  subject: z.enum(["math", "science", "language", "social studies"], { required_error: "Please select a subject." }),
+  subject: z.enum(["math", "science", "language", "social studies", "sat", "act"], { required_error: "Please select a subject." }),
   interestLevel: z.array(z.number()).min(1).max(1),
   aiUsage: z.enum(["daily", "weekly", "monthly", "rarely"], { required_error: "Please select your AI usage frequency." }),
 });
@@ -124,6 +124,18 @@ export default function SurveyForm({ onSubmit }: SurveyFormProps) {
                           </FormControl>
                           <FormLabel className="font-normal">Social Studies</FormLabel>
                         </FormItem>
+                        <FormItem className="flex items-center space-x-3 space-y-0">
+                          <FormControl>
+                            <RadioGroupItem value="sat" />
+                          </FormControl>
+                          <FormLabel className="font-normal">SAT</FormLabel>
+                        </FormItem>
+                        <FormItem className="flex items-center space-x-3 space-y-0">
+                          <FormControl>
+                            <RadioGroupItem value="act" />
+                          </FormControl>
+                          <FormLabel className="font-normal">ACT</FormLabel>
+                        </FormItem>
                       </RadioGroup>
                     </FormControl>
                     <FormMessage />
@@ -137,26 +149,26 @@ export default function SurveyForm({ onSubmit }: SurveyFormProps) {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>3. How would you rate your level of study interest in this area?</FormLabel>
-                    <FormControl>
-                       <div className="relative">
-                        <Slider
-                            min={1}
-                            max={5}
-                            step={1}
-                            defaultValue={field.value}
-                            onValueChange={(value) => field.onChange(value)}
-                        />
-                         <div className="absolute top-1/2 -translate-y-1/2 w-full h-full flex justify-between items-center px-[10px] pointer-events-none">
-                            {[...Array(5)].map((_, i) => (
-                                <div key={i} className="h-2 w-2 rounded-full bg-slate-200" />
-                            ))}
+                     <FormControl>
+                        <div className="relative pt-2">
+                            <Slider
+                                min={1}
+                                max={5}
+                                step={1}
+                                defaultValue={field.value}
+                                onValueChange={(value) => field.onChange(value)}
+                            />
+                            <div className="absolute top-1/2 -translate-y-1/2 w-full h-full flex justify-between items-center px-[10px] pointer-events-none">
+                                {[...Array(5)].map((_, i) => (
+                                    <div key={i} className="h-2 w-2 rounded-full bg-slate-200" />
+                                ))}
+                            </div>
                         </div>
-                      </div>
                     </FormControl>
                     <div className="relative h-10 text-sm text-muted-foreground">
-                      <span className="absolute left-0 text-center w-1/5">Not<br/>Interested</span>
-                      <span className="absolute left-1/2 -translate-x-1/2 text-center w-1/5">Neutral</span>
-                      <span className="absolute right-0 text-center w-1/5">Extremely<br/>Interested</span>
+                        <span className="absolute left-0 text-center w-[20%]">Not<br/>Interested</span>
+                        <span className="absolute left-1/2 -translate-x-1/2 text-center w-[20%]">Neutral</span>
+                        <span className="absolute right-0 text-center w-[20%]">Extremely<br/>Interested</span>
                     </div>
                     <FormMessage />
                   </FormItem>
