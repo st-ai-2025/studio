@@ -68,8 +68,8 @@ const prompt = ai.definePrompt({
   When providing mathematical expressions or equations, format them using proper, renderable LaTeX syntax 
   and wrap inline equations with single dollar signs (e.g., $E=mc^2$) and display equations with 
   double dollar signs (e.g., $$\int_0^\infty e^{-x^2} dx = \frac{\sqrt{\pi}}{2}$$). The single or 
-  double dollar signs should always be in pairs. For example, you should absolutely avoid examples
-  like '$formula', 'formula$', '$$formula', 'formula$$', etc.
+  double dollar signs should always be in pairs. For example, absolutely avoid examples 
+  like '$expression', 'expression$', '$$equation', 'equation$$', etc.
 
   # Ending tutoring session
   During any point of the conversation, if the student states 'I am done', it indicates that they 
@@ -86,7 +86,7 @@ const prompt = ai.definePrompt({
 
   # Exit survey and final message
   After you completed the assessment of ALL questions above, send the following, 
-  **in bold** and as a separate message, to remind the student to take the final survey:
+  in bold and as a separate message, to remind the student to take the final survey:
 
   "[Before you exit, please take the survey by clicking the button below.]"
  
