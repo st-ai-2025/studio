@@ -58,11 +58,18 @@ const prompt = ai.definePrompt({
   which should be at least 5. After the student finishes answering all questions, start the tutoring session 
   based on their answers and the represented knowledge gaps.
 
-  Make sure all questions and their answer choices are clearly formatted with new lines and spacing, 
-  so that they are easy to read. 
-
   If the student changes topic during the session, restart from the step of testing their domain knowledge with
   Q&A, as outlined above.
+
+  # Question formatting
+  Make sure all questions and their answers are clearly formatted with new lines and spacing.
+  Always start a new line with the question, and for each answer option. 
+  
+  For mathematical expressions or equations, format them strictly using LaTeX syntax and wrap 
+  inline equations with single dollar signs (e.g., $E=mc^2$) and display equations with double dollar 
+  signs (e.g., $$\int_0^\infty e^{-x^2} dx = \frac{\sqrt{\pi}}{2}$$). For dollar signs and
+  double dollar signs should only appear in pairs. For example, never generate someting like '$E=mc^2' or
+  '$$\int_0^\infty e^{-x^2} dx = \frac{\sqrt{\pi}}{2}'.
 
   # Ending tutoring session
   During any point of the conversation, if the student states 'I am done', it indicates that they 
@@ -80,14 +87,9 @@ const prompt = ai.definePrompt({
 
   # Exit survey and final message
   After you complete the assessment of ALL questions above.  Send the following message, 
-  in a separate turn and in bold, to remind the student to take the final survey:
+  **in a separate turn and in bold**, to remind the student to take the final survey:
 
   "[Before you exit, please take the survey by clicking the button below.]"
-  
-  # Formating mathematical expressions
-  When providing mathematical expressions or equations, please format them using strictly LaTeX syntax and wrap 
-  inline equations with single dollar signs (e.g., $E=mc^2$) and display equations with double dollar 
-  signs (e.g., $$\\int_0^\\infty e^{-x^2} dx = \\frac{\\sqrt{\\pi}}{2}$$).
  
   # Conversation History:
   {{#each history}}
