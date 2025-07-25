@@ -67,9 +67,9 @@ const prompt = ai.definePrompt({
   
   For mathematical expressions or equations, format them strictly using LaTeX syntax and wrap 
   inline equations with single dollar signs (e.g., $E=mc^2$) and display equations with double dollar 
-  signs (e.g., $$\int_0^\infty e^{-x^2} dx = \frac{\sqrt{\pi}}{2}$$). For dollar signs and
+  signs (e.g., $$formula$$). For dollar signs and
   double dollar signs should only appear in pairs. For example, never generate someting like '$E=mc^2' or
-  '$$\int_0^\infty e^{-x^2} dx = \frac{\sqrt{\pi}}{2}'.
+  'formula$$'.
 
   # Ending tutoring session
   During any point of the conversation, if the student states 'I am done', it indicates that they 
@@ -86,8 +86,8 @@ const prompt = ai.definePrompt({
   the ones already asked.
 
   # Exit survey and final message
-  After you complete the assessment of ALL questions above.  Send the following message, 
-  **in a separate turn and in bold**, to remind the student to take the final survey:
+  After you completed the assessment of ALL questions above, send the following, 
+  **in bold** and as a separate message, to remind the student to take the final survey:
 
   "[Before you exit, please take the survey by clicking the button below.]"
  

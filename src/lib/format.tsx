@@ -7,10 +7,9 @@ import Latex from "react-latex-next";
 const surveyText = "[Before you exit, please take the survey by clicking the button below.]";
 
 export function formatMessage(text: string) {
-  // Regex to match all supported patterns: LaTeX (inline and display), survey link, bold, and italics.
-  // The order is important: LaTeX first to avoid inner content being parsed as markdown.
-  const regex = /(\$\$[\s\S]*?\$\$|\$.*?\$|\*\*.*?\*\*|\*.*?\*|\[Before you exit, please take the survey by clicking the button below\.\])/g;
-  const parts = text.split(regex);
+  // Regex to match all supported patterns: LaTeX (inline and display), survey link, bold, and italics, or plain text chunks.
+  const regex = /(\$\$[\s\S]*?\$\$|\$.*?\$|\*\*.*?\*\*|\*.*?\*|\[Before you exit, please take the survey by clicking the button below\.\]|[\s\S]+?)/g;
+  const parts = text.match(regex) || [];
 
   return (
     <>
@@ -37,7 +36,7 @@ export function formatMessage(text: string) {
         if (part === surveyText) {
             return <span key={index} className="text-red-500 font-bold">{part}</span>
         }
-        // Plain text
+        // Plain text (including newlines)
         return <React.Fragment key={index}>{part}</React.Fragment>;
       })}
     </>
