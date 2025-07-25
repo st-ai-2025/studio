@@ -138,16 +138,25 @@ export default function SurveyForm({ onSubmit }: SurveyFormProps) {
                   <FormItem>
                     <FormLabel>3. How would you rate your level of study interest in this area?</FormLabel>
                     <FormControl>
+                       <div className="relative pt-2">
                         <Slider
                             min={1}
                             max={5}
                             step={1}
                             defaultValue={field.value}
                             onValueChange={(value) => field.onChange(value)}
+                            className="py-2"
                         />
+                         <div className="absolute top-0 w-full h-full flex justify-between items-center -z-10 px-[10px]">
+                            {[...Array(5)].map((_, i) => (
+                                <div key={i} className="h-2 w-2 rounded-full bg-muted" />
+                            ))}
+                        </div>
+                      </div>
                     </FormControl>
                     <div className="flex justify-between text-sm text-muted-foreground">
                         <span>Not Interested</span>
+                        <span>Neutral</span>
                         <span>Extremely Interested</span>
                     </div>
                     <FormMessage />
