@@ -58,10 +58,18 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [showPostSurveyButton, setShowPostSurveyButton] = useState(false);
   const [isPostSurveyOpen, setIsPostSurveyOpen] = useState(false);
+  const [chatStartTime, setChatStartTime] = useState<Date | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const getElapsedMinutes = () => {
+    if (!chatStartTime) return 0;
+    const now = new Date();
+    const diffMs = now.getTime() - chatStartTime.getTime();
+    return Math.floor(diffMs / 60000);
   };
 
   useEffect(() => {
@@ -116,13 +124,13 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
       userId: user.uid,
     };
     
-    const updatedMessages = [...messages, userMessage];
-    setMessages(updatedMessages);
+    setMessages(prev => [...prev, userMessage]);
     setInput("");
     setIsResponding(true);
 
     try {
         if (isFirstMessage) {
+            setChatStartTime(new Date());
             await createUserProfile(user); 
             const sessionRef = doc(db, "users", user.uid, "sessions", sessionId);
             await setDoc(sessionRef, {
@@ -141,7 +149,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
         
         const res = await personalizedChat({ 
           surveyResponses: surveyData, 
-          history: updatedMessages.map(({ role, content }) => ({ role, content })) 
+          history: [...messages, userMessage].map(({ role, content }) => ({ role, content })) 
         });
         
         if (res.chatbotResponse) {
@@ -297,7 +305,12 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
                     <AlertDialogHeader>
                     <AlertDialogTitle>How to End Your Session</AlertDialogTitle>
                     <AlertDialogDescription>
-                        To conclude your session, tell your AI tutor "I am done". Then the AI tutor will ask you a few questions to assess your understanding of the topic before you can exit.
+                        To conclude your session, tell your AI tutor "I am done". The AI tutor will then ask you a few questions to assess your understanding of the topic before you can exit.
+                        {chatStartTime && (
+                            <div className="mt-4 text-sm text-foreground p-3 bg-secondary rounded-md">
+                                You have only used the tutoring chatbot for {getElapsedMinutes()} minutes. To make your data useful for the research, it is recommended that you spend at least 15 minutes in the chat.
+                            </div>
+                        )}
                     </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -311,3 +324,5 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
     </div>
   );
 }
+
+    
