@@ -53,10 +53,10 @@ export default function PostSurveyForm({ onSubmit }: PostSurveyFormProps) {
                         </div>
                     </div>
                 </FormControl>
-                <div className="grid grid-cols-3 text-sm text-muted-foreground">
-                    <span className="text-left w-1/3">Greatly Worsened</span>
-                    <span className="text-center w-1/3">Same</span>
-                    <span className="text-right w-1/3">Greatly Improved</span>
+                <div className="relative h-10 text-sm text-muted-foreground">
+                    <span className="absolute left-0 text-center w-1/5">Greatly<br/>Worsened</span>
+                    <span className="absolute left-1/2 -translate-x-1/2 text-center w-1/5">Same</span>
+                    <span className="absolute right-0 text-center w-1/5">Greatly<br/>Improved</span>
                 </div>
                 <FormMessage />
                 </FormItem>
@@ -84,10 +84,10 @@ export default function PostSurveyForm({ onSubmit }: PostSurveyFormProps) {
                         </div>
                     </div>
                 </FormControl>
-                <div className="grid grid-cols-3 text-sm text-muted-foreground">
-                    <span className="text-left w-1/3">Greatly Decreased</span>
-                    <span className="text-center w-1/3">Same</span>
-                    <span className="text-right w-1/3">Greatly Increased</span>
+                <div className="relative h-10 text-sm text-muted-foreground">
+                    <span className="absolute left-0 text-center w-1/5">Greatly<br/>Decreased</span>
+                    <span className="absolute left-1/2 -translate-x-1/2 text-center w-1/5">Same</span>
+                    <span className="absolute right-0 text-center w-1/5">Greatly<br/>Increased</span>
                 </div>
                 <FormMessage />
                 </FormItem>
