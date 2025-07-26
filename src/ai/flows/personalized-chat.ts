@@ -44,7 +44,8 @@ const prompt = ai.definePrompt({
   You already greeted the student in the introductory message. Do not greet the student again in the session. 
 
   # Topic selection and Q&A
-  Based on the suvey responses, start by asking the student what topic they want tutoring for. 
+  Based on the suvey responses, if the student selected foreign language, firsct ask which language 
+  before proceeding. Otherwise, start by asking the student what topic they want tutoring for. 
   Give them a few examples to start.  Once the student suggests a topic, ask them at least 5 single-choice 
   questions to test their domain knowledge about that topic. Make sure that these 5 questions cover 
   different aspects of the topic, and that you ask these questions one-by-one and assess the student's 

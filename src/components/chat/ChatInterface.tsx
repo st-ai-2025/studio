@@ -116,75 +116,93 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
 
   const handleSend = async () => {
     if (input.trim() === "" || !user || !sessionId) {
-        toast({ variant: "destructive", title: "Error", description: "Cannot send message. User or session is not initialized." });
-        return;
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Cannot send message. User or session is not initialized.",
+      });
+      return;
     }
-
+  
     const userMessageContent = input.trim();
     const userMessage = {
       content: userMessageContent,
-      role: 'user' as const,
+      role: "user" as const,
       userId: user.uid,
     };
-    
-    const newMessages = [...messages, userMessage];
-    setMessages(newMessages);
-
+  
+    // Use functional update to ensure we have the latest state
+    setMessages((prevMessages) => [...prevMessages, userMessage]);
+  
     setInput("");
     setIsResponding(true);
-
+  
     try {
-        if (isFirstMessage) {
-            setChatStartTime(new Date());
-            await createUserProfile(user); 
-            const sessionRef = doc(db, "users", user.uid, "sessions", sessionId);
-            await setDoc(sessionRef, {
-                surveyData: surveyData,
-                startTime: serverTimestamp(),
-            });
-            setIsFirstMessage(false);
+      if (isFirstMessage) {
+        setChatStartTime(new Date());
+        await createUserProfile(user);
+        const sessionRef = doc(db, "users", user.uid, "sessions", sessionId);
+        await setDoc(sessionRef, {
+          surveyData: surveyData,
+          startTime: serverTimestamp(),
+        });
+        setIsFirstMessage(false);
+      }
+  
+      const messagesCollectionRef = collection(
+        db,
+        "users",
+        user.uid,
+        "sessions",
+        sessionId,
+        "messages"
+      );
+  
+      await addDoc(messagesCollectionRef, {
+        ...userMessage,
+        timestamp: serverTimestamp(),
+      });
+  
+      const res = await personalizedChat({
+        surveyResponses: surveyData,
+        // Pass the updated history directly to the API call
+        history: [...messages, userMessage].map(({ role, content }) => ({ role, content })),
+      });
+  
+      if (res.chatbotResponse) {
+        const trimmedResponse = res.chatbotResponse.trim();
+        if (
+          trimmedResponse.includes(
+            "[Before you exit, please take the survey by clicking the button below.]"
+          )
+        ) {
+          setShowPostSurveyButton(true);
         }
-
-        const messagesCollectionRef = collection(db, "users", user.uid, "sessions", sessionId, "messages");
-        
+  
+        const assistantMessage = {
+          content: trimmedResponse,
+          role: "assistant" as const,
+          userId: user.uid,
+        };
+  
+        // Use functional update for the assistant's message as well
+        setMessages((prevMessages) => [...prevMessages, assistantMessage]);
+  
         await addDoc(messagesCollectionRef, {
-            ...userMessage,
-            timestamp: serverTimestamp(),
+          ...assistantMessage,
+          timestamp: serverTimestamp(),
         });
-        
-        const res = await personalizedChat({ 
-          surveyResponses: surveyData, 
-          history: newMessages.map(({ role, content }) => ({ role, content })) 
-        });
-        
-        if (res.chatbotResponse) {
-            const trimmedResponse = res.chatbotResponse.trim();
-            if (trimmedResponse.includes("[Before you exit, please take the survey by clicking the button below.]")) {
-              setShowPostSurveyButton(true);
-            }
-
-            const assistantMessage = {
-                content: trimmedResponse,
-                role: 'assistant' as const,
-                userId: user.uid
-            };
-            
-            setMessages((prevMessages) => [...prevMessages, assistantMessage]);
-            
-            await addDoc(messagesCollectionRef, {
-              ...assistantMessage,
-              timestamp: serverTimestamp(),
-            });
-        }
+      }
     } catch (error) {
-        console.error("Error sending message:", error);
-        toast({ 
-            variant: "destructive", 
-            title: "Failed to send message", 
-            description: "There was an error sending your message. Please check the console for details."
-        });
+      console.error("Error sending message:", error);
+      toast({
+        variant: "destructive",
+        title: "Failed to send message",
+        description:
+          "There was an error sending your message. Please check the console for details.",
+      });
     } finally {
-        setIsResponding(false);
+      setIsResponding(false);
     }
   };
   
@@ -330,7 +348,5 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
     </div>
   );
 }
-
-    
 
     
