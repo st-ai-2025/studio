@@ -16,7 +16,7 @@ import { LogOut } from "lucide-react";
 
 const surveySchema = z.object({
   graduationYear: z.string({ required_error: "Please select a graduation year." }),
-  subject: z.enum(["math", "science", "language", "social studies", "sat", "act"], { required_error: "Please select a subject." }),
+  subject: z.enum(["math", "science", "english", "foreign language", "social studies", "sat", "act"], { required_error: "Please select a subject." }),
   interestLevel: z.array(z.number()).min(1).max(1),
   aiUsage: z.enum(["daily", "weekly", "monthly", "rarely"], { required_error: "Please select your AI usage frequency." }),
 });
@@ -114,9 +114,15 @@ export default function SurveyForm({ onSubmit }: SurveyFormProps) {
                         </FormItem>
                         <FormItem className="flex items-center space-x-3 space-y-0">
                           <FormControl>
-                            <RadioGroupItem value="language" />
+                            <RadioGroupItem value="english" />
                           </FormControl>
-                          <FormLabel className="font-normal">Language</FormLabel>
+                          <FormLabel className="font-normal">English</FormLabel>
+                        </FormItem>
+                        <FormItem className="flex items-center space-x-3 space-y-0">
+                          <FormControl>
+                            <RadioGroupItem value="foreign language" />
+                          </FormControl>
+                          <FormLabel className="font-normal">Foreign Language</FormLabel>
                         </FormItem>
                         <FormItem className="flex items-center space-x-3 space-y-0">
                           <FormControl>
