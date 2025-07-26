@@ -123,20 +123,20 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
       });
       return;
     }
-  
+
     const userMessageContent = input.trim();
     const userMessage = {
       content: userMessageContent,
       role: "user" as const,
       userId: user.uid,
     };
-  
-    // Use functional update to ensure we have the latest state
-    setMessages((prevMessages) => [...prevMessages, userMessage]);
-  
+
+    const updatedMessages = [...messages, userMessage];
+    setMessages(updatedMessages);
+
     setInput("");
     setIsResponding(true);
-  
+
     try {
       if (isFirstMessage) {
         setChatStartTime(new Date());
@@ -148,7 +148,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
         });
         setIsFirstMessage(false);
       }
-  
+
       const messagesCollectionRef = collection(
         db,
         "users",
@@ -157,18 +157,17 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
         sessionId,
         "messages"
       );
-  
+
       await addDoc(messagesCollectionRef, {
         ...userMessage,
         timestamp: serverTimestamp(),
       });
-  
+
       const res = await personalizedChat({
         surveyResponses: surveyData,
-        // Pass the updated history directly to the API call
-        history: [...messages, userMessage].map(({ role, content }) => ({ role, content })),
+        history: updatedMessages.map(({ role, content }) => ({ role, content })),
       });
-  
+
       if (res.chatbotResponse) {
         const trimmedResponse = res.chatbotResponse.trim();
         if (
@@ -178,16 +177,15 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
         ) {
           setShowPostSurveyButton(true);
         }
-  
+
         const assistantMessage = {
           content: trimmedResponse,
           role: "assistant" as const,
           userId: user.uid,
         };
-  
-        // Use functional update for the assistant's message as well
+
         setMessages((prevMessages) => [...prevMessages, assistantMessage]);
-  
+
         await addDoc(messagesCollectionRef, {
           ...assistantMessage,
           timestamp: serverTimestamp(),
@@ -348,5 +346,3 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
     </div>
   );
 }
-
-    
