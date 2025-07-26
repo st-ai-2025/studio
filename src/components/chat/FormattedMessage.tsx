@@ -16,7 +16,7 @@ const FormattedMessage = ({ content }: FormattedMessageProps) => {
       {lines.map((line, lineIndex) => (
         <React.Fragment key={lineIndex}>
           {lineIndex > 0 && <br />}
-          {line.split(/(\*\*.*?\*\*)/g).map((part, partIndex) => {
+          {line.split(/(\*\*.*?\*\*|\*.*?\*)/g).map((part, partIndex) => {
             if (part.startsWith('**') && part.endsWith('**')) {
               const boldText = part.slice(2, -2);
               return (
@@ -24,6 +24,14 @@ const FormattedMessage = ({ content }: FormattedMessageProps) => {
                   <Latex>{boldText}</Latex>
                 </strong>
               );
+            }
+            if (part.startsWith('*') && part.endsWith('*')) {
+                const italicText = part.slice(1, -1);
+                return (
+                    <em key={partIndex}>
+                        <Latex>{italicText}</Latex>
+                    </em>
+                );
             }
             return <Latex key={partIndex}>{part}</Latex>;
           })}
