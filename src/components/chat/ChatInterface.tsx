@@ -127,8 +127,8 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
       userId: user.uid,
     };
     
-    const updatedMessages = [...messages, userMessage];
-    setMessages(updatedMessages);
+    const newMessages = [...messages, userMessage];
+    setMessages(newMessages);
 
     setInput("");
     setIsResponding(true);
@@ -154,7 +154,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
         
         const res = await personalizedChat({ 
           surveyResponses: surveyData, 
-          history: updatedMessages.map(({ role, content }) => ({ role, content })) 
+          history: newMessages.map(({ role, content }) => ({ role, content })) 
         });
         
         if (res.chatbotResponse) {
@@ -168,7 +168,8 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
                 role: 'assistant' as const,
                 userId: user.uid
             };
-            setMessages(prev => [...prev, assistantMessage]);
+            
+            setMessages((prevMessages) => [...prevMessages, assistantMessage]);
             
             await addDoc(messagesCollectionRef, {
               ...assistantMessage,
@@ -329,5 +330,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
     </div>
   );
 }
+
+    
 
     
