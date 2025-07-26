@@ -31,7 +31,7 @@ export default function ChatMessage({ message }: ChatMessageProps) {
         "max-w-[75%] rounded-2xl", 
         isUser ? "bg-primary text-primary-foreground" : "bg-card shadow-sm"
       )}>
-        <CardContent className="p-3 whitespace-pre-wrap">
+        <CardContent className="p-3">
           <FormattedMessage content={message.content} />
         </CardContent>
       </Card>
