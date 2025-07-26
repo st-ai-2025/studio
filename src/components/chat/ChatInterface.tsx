@@ -123,19 +123,19 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
       });
       return;
     }
-
+  
     const userMessageContent = input.trim();
     const userMessage = {
       content: userMessageContent,
       role: "user" as const,
       userId: user.uid,
     };
-
+  
     const updatedMessages = [...messages, userMessage];
     setMessages(updatedMessages);
     setInput("");
     setIsResponding(true);
-
+  
     try {
       if (isFirstMessage) {
         setChatStartTime(new Date());
@@ -147,7 +147,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
         });
         setIsFirstMessage(false);
       }
-
+  
       const messagesCollectionRef = collection(
         db,
         "users",
@@ -156,17 +156,17 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
         sessionId,
         "messages"
       );
-
+  
       await addDoc(messagesCollectionRef, {
         ...userMessage,
         timestamp: serverTimestamp(),
       });
-
+  
       const res = await personalizedChat({
         surveyResponses: surveyData,
         history: updatedMessages.map(({ role, content }) => ({ role, content })),
       });
-
+  
       if (res.chatbotResponse) {
         const trimmedResponse = res.chatbotResponse.trim();
         if (
@@ -176,15 +176,15 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
         ) {
           setShowPostSurveyButton(true);
         }
-
+  
         const assistantMessage = {
           content: trimmedResponse,
           role: "assistant" as const,
           userId: user.uid,
         };
-
+  
         setMessages((prevMessages) => [...prevMessages, assistantMessage]);
-
+  
         await addDoc(messagesCollectionRef, {
           ...assistantMessage,
           timestamp: serverTimestamp(),
@@ -192,11 +192,12 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
       }
     } catch (error) {
       console.error("Error sending message:", error);
+      setMessages(messages); // Revert to previous state on error
       toast({
         variant: "destructive",
         title: "Failed to send message",
         description:
-          "There was an error sending your message. Please check the console for details.",
+          "There was an error sending your message. Please try again.",
       });
     } finally {
       setIsResponding(false);
@@ -345,5 +346,3 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
     </div>
   );
 }
-
-    
