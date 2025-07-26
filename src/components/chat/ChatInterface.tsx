@@ -133,7 +133,6 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
 
     const updatedMessages = [...messages, userMessage];
     setMessages(updatedMessages);
-
     setInput("");
     setIsResponding(true);
 
@@ -346,3 +345,5 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
     </div>
   );
 }
+
+    
