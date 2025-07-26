@@ -156,7 +156,7 @@ export default function SurveyForm({ onSubmit }: SurveyFormProps) {
                   <FormItem>
                     <FormLabel>3. How would you rate your level of study interest in this area?</FormLabel>
                      <FormControl>
-                        <div className="relative pt-2">
+                        <div className="relative">
                             <Slider
                                 min={1}
                                 max={5}
