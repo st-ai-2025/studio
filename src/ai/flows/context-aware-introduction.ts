@@ -8,7 +8,6 @@
  * - ContextAwareIntroductionOutput - The return type for the function.
  */
 
-import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const ContextAwareIntroductionInputSchema = z.object({
@@ -22,35 +21,10 @@ const ContextAwareIntroductionOutputSchema = z.object({
 export type ContextAwareIntroductionOutput = z.infer<typeof ContextAwareIntroductionOutputSchema>;
 
 export async function generateContextAwareIntroduction(input: ContextAwareIntroductionInput): Promise<ContextAwareIntroductionOutput> {
-  return contextAwareIntroductionFlow(input);
+  return {
+    introduction: `Hi there! I am your AI tutor 🧑‍🏫. Super excited that you want to have a discussion with me today! 
+Please be aware that I am part of a science research project. Our discussion should take 
+**at least 15 minutes** to be effective.  As a reminder, please do NOT provide any personal 
+information during our chat. Are you ready to dive in?`
+  };
 }
-
-const prompt = ai.definePrompt({
-  name: 'contextAwareIntroductionPrompt',
-  input: {schema: z.object({
-    surveyResponses: z.string(),
-  })},
-  output: {schema: ContextAwareIntroductionOutputSchema},
-  prompt: `You are a friendly and welcoming AI tutor for high school students. 
-  As an introduction, generate a welcome message, exactly as the following:
-
-  "Hi there! I am your AI tutor 🧑‍🏫. Super excited that you want to have a discussion with me today! 
-  Please be aware that I am part of a science research project. Our discussion should take 
-  **at least 15 minutes** to be effective.  As a reminder, please do NOT provide any personal 
-  information during our chat. Are you ready to dive in?"
-`,
-});
-
-const contextAwareIntroductionFlow = ai.defineFlow(
-  {
-    name: 'contextAwareIntroductionFlow',
-    inputSchema: ContextAwareIntroductionInputSchema,
-    outputSchema: ContextAwareIntroductionOutputSchema,
-  },
-  async input => {
-    const {output} = await prompt({
-      surveyResponses: JSON.stringify(input.surveyResponses),
-    });
-    return output!;
-  }
-);
