@@ -6,6 +6,10 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+.message-content {
+  white-space: pre-wrap;
+}
+
 @layer base {
   :root {
     --background: 207 88% 94%;
