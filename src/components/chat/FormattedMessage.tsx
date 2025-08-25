@@ -9,18 +9,19 @@ type FormattedMessageProps = {
 };
 
 const FormattedMessage = ({ content }: FormattedMessageProps) => {
-  const jsonRegex = /(json({[\s\S]*}))/;
+  const jsonRegex = /json({[\s\S]*})/;
   const match = content.match(jsonRegex);
 
   if (!match) {
     return <Latex>{content}</Latex>;
   }
 
-  const jsonBlock = match[1];
-  const jsonString = match[2];
+  const jsonString = match[1];
+  const jsonBlock = `json${jsonString}`;
+  
   const parts = content.split(jsonBlock);
   const leadingText = parts[0];
-  const trailingText = parts[1];
+  const trailingText = parts.slice(1).join(jsonBlock); 
 
   let qnaContent = null;
   try {

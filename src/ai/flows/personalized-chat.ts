@@ -66,7 +66,7 @@ const prompt = ai.definePrompt({
   restart from the step of testing their domain knowledge with Q&A, as outlined above.
 
   # Question formatting
-  When generating Q&A as part of the message, format it stictly in JSON, and always lead the block with json label. For example:
+  When generating Q&A as part of the message, format it in JSON, and always lead the block with json label. For example:
   json{
     "id": "q1",
     "question": "Which of the following is a primary color?",
@@ -89,7 +89,7 @@ const prompt = ai.definePrompt({
       }
     ]
   }
-  Treat the Q&A JSON as part of the message, and do not repeat any part of it.
+  Do not repeat the question or answer outside of the JSON block
   Always start the json block in a new line.
   
   When using mathematical expressions or equations, format them using proper, renderable LaTeX syntax 
