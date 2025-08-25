@@ -72,7 +72,7 @@ export default function SurveyForm({ onSubmit }: SurveyFormProps) {
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select your graduation year" />
+                          <SelectValue placeholder="Select year" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
