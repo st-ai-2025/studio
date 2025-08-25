@@ -9,51 +9,37 @@ type FormattedMessageProps = {
 };
 
 const FormattedMessage = ({ content }: FormattedMessageProps) => {
-  const jsonRegex = /json({[\s\S]*})/;
+  const jsonRegex = /(json({[\s\S]*}))/;
   const match = content.match(jsonRegex);
-  
-  let leadingText = content;
+
+  if (!match) {
+    return <Latex>{content}</Latex>;
+  }
+
+  const jsonBlock = match[1];
+  const jsonString = match[2];
+  const parts = content.split(jsonBlock);
+  const leadingText = parts[0];
+  const trailingText = parts[1];
+
   let qnaContent = null;
-
-  if (match && match[1]) {
-    try {
-      qnaContent = JSON.parse(match[1]);
-      const jsonBlockWithOptions = `json${match[1]}`;
-      const jsonStartIndex = content.indexOf(jsonBlockWithOptions);
-      if (jsonStartIndex !== -1) {
-        leadingText = content.substring(0, jsonStartIndex);
-      } else {
-        // Fallback for slightly malformed json block
-        const altJsonStartIndex = content.indexOf(match[0]);
-        if (altJsonStartIndex !== -1) {
-            leadingText = content.substring(0, altJsonStartIndex);
-        }
-      }
-    } catch (e) {
-      // Not a valid JSON, fall through to render as plain text.
-    }
+  try {
+    qnaContent = JSON.parse(jsonString);
+  } catch (e) {
+    // If parsing fails, render the whole message as is.
+    return <Latex>{content}</Latex>;
   }
 
-  // If the entire message is a JSON object without the 'json' prefix
-  if (!qnaContent) {
-    try {
-      qnaContent = JSON.parse(content);
-      leadingText = ''; // The entire message is the JSON
-    } catch (e) {
-      // Not a valid JSON object
-    }
-  }
-  
   if (qnaContent && qnaContent.question && Array.isArray(qnaContent.answers)) {
     return (
       <div>
         {leadingText && (
-            <div className="mb-4">
-                <Latex>{leadingText}</Latex>
-            </div>
+          <div className="mb-4">
+            <Latex>{leadingText}</Latex>
+          </div>
         )}
         <div className="mb-2">
-            <Latex>{qnaContent.question}</Latex>
+          <Latex>{qnaContent.question}</Latex>
         </div>
         <ul className="space-y-1">
           {qnaContent.answers.map((ans: { label: string, answer: string }, index: number) => (
@@ -62,14 +48,17 @@ const FormattedMessage = ({ content }: FormattedMessageProps) => {
             </li>
           ))}
         </ul>
+        {trailingText && (
+            <div className="mt-4">
+                <Latex>{trailingText}</Latex>
+            </div>
+        )}
       </div>
     );
   }
-  
-  // Fallback for non-JSON or malformed content, handles markdown and latex
-  return (
-      <Latex>{content}</Latex>
-  );
+
+  // Fallback for non-JSON or malformed content
+  return <Latex>{content}</Latex>;
 };
 
 export default FormattedMessage;
