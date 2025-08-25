@@ -9,27 +9,47 @@ type FormattedMessageProps = {
 };
 
 const FormattedMessage = ({ content }: FormattedMessageProps) => {
-  const jsonRegex = /(json({[\s\S]*}))/;
-  const match = content.match(jsonRegex);
+  const jsonStartIndex = content.lastIndexOf('json{');
 
-  if (!match) {
+  if (jsonStartIndex === -1) {
     return <Latex>{content}</Latex>;
   }
 
-  const jsonString = match[2];
-  const fullJsonBlock = match[1];
-  
-  const parts = content.split(fullJsonBlock);
-  const leadingText = parts[0];
-  const trailingText = parts.slice(1).join(fullJsonBlock);
+  const leadingText = content.substring(0, jsonStartIndex).trim();
+  const jsonBlock = content.substring(jsonStartIndex + 4); // +4 to skip "json"
 
   let qnaContent: Record<string, string> | null = null;
+  let trailingText = '';
+
   try {
-    qnaContent = JSON.parse(jsonString);
+    // Find the matching closing brace for the json content
+    let braceCount = 0;
+    let jsonEndIndex = -1;
+    for (let i = 0; i < jsonBlock.length; i++) {
+        if (jsonBlock[i] === '{') {
+            braceCount++;
+        } else if (jsonBlock[i] === '}') {
+            braceCount--;
+        }
+        if (braceCount === 0) {
+            jsonEndIndex = i;
+            break;
+        }
+    }
+
+    if (jsonEndIndex !== -1) {
+        const jsonString = jsonBlock.substring(0, jsonEndIndex + 1);
+        qnaContent = JSON.parse(jsonString);
+        trailingText = jsonBlock.substring(jsonEndIndex + 1).trim();
+    } else {
+        // Fallback if no matching brace is found
+        return <Latex>{content}</Latex>;
+    }
   } catch (e) {
+    // Malformed JSON, render as is
     return <Latex>{content}</Latex>;
   }
-
+  
   if (qnaContent && typeof qnaContent === 'object' && !Array.isArray(qnaContent) && Object.keys(qnaContent).length > 0) {
     const isAnswerBlock = Object.keys(qnaContent).every(key => typeof key === 'string' && typeof qnaContent![key] === 'string');
     
@@ -57,42 +77,7 @@ const FormattedMessage = ({ content }: FormattedMessageProps) => {
       );
     }
   }
-
-  // Fallback for previous JSON format or malformed content
-  try {
-    const oldFormat = JSON.parse(jsonString);
-    if (oldFormat && oldFormat.question && Array.isArray(oldFormat.answers)) {
-      return (
-        <div>
-          {leadingText && (
-            <div className="mb-4">
-              <Latex>{leadingText}</Latex>
-            </div>
-          )}
-          <div className="mb-2">
-            <Latex>{oldFormat.question}</Latex>
-          </div>
-          <ul className="space-y-1">
-            {oldFormat.answers.map((ans: { label: string, answer: string }, index: number) => (
-              <li key={index}>
-                <Latex>{`${ans.label}. ${ans.answer}`}</Latex>
-              </li>
-            ))}
-          </ul>
-          {trailingText && (
-              <div className="mt-4">
-                  <Latex>{trailingText}</Latex>
-              </div>
-          )}
-        </div>
-      );
-    }
-  } catch (e) {
-    // Fallback if neither format parses
-    return <Latex>{content}</Latex>;
-  }
-
-
+  
   // Fallback for content that doesn't match expected structures
   return <Latex>{content}</Latex>;
 };
