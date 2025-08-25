@@ -86,6 +86,7 @@ const prompt = ai.definePrompt({
     ]
   }
   Treat the Q&A JSON as part of the message, and do not repeat any part of it.
+  Always start the json block in a new line.
   
   When using mathematical expressions or equations, format them using proper, renderable LaTeX syntax 
   and wrap inline equations with single dollar signs (e.g., $E=mc^2$) and display equations with 

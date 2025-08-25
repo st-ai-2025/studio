@@ -11,6 +11,7 @@ type FormattedMessageProps = {
 const FormattedMessage = ({ content }: FormattedMessageProps) => {
   const jsonRegex = /json({[\s\S]*})/;
   const match = content.match(jsonRegex);
+  
   let leadingText = content;
   let qnaContent = null;
 
@@ -21,30 +22,39 @@ const FormattedMessage = ({ content }: FormattedMessageProps) => {
       const jsonStartIndex = content.indexOf(jsonBlockWithOptions);
       if (jsonStartIndex !== -1) {
         leadingText = content.substring(0, jsonStartIndex);
+      } else {
+        // Fallback for slightly malformed json block
+        const altJsonStartIndex = content.indexOf(match[0]);
+        if (altJsonStartIndex !== -1) {
+            leadingText = content.substring(0, altJsonStartIndex);
+        }
       }
     } catch (e) {
-      // It looked like a JSON block, but wasn't valid JSON.
-      // We will fall through and render the original content.
+      // Not a valid JSON, fall through to render as plain text.
     }
   }
 
-  // If no JSON block was found, try parsing the whole content.
+  // If the entire message is a JSON object without the 'json' prefix
   if (!qnaContent) {
     try {
       qnaContent = JSON.parse(content);
-      leadingText = ''; // Whole message is JSON
-    } catch (error) {
-      // Not a valid JSON. Fallback to original rendering.
+      leadingText = ''; // The entire message is the JSON
+    } catch (e) {
+      // Not a valid JSON object
     }
   }
   
   if (qnaContent && qnaContent.question && Array.isArray(qnaContent.answers)) {
     return (
       <div>
-        {leadingText && leadingText !== `json${match?.[1]}` && (
-            <p className="mb-4"><Latex>{leadingText}</Latex></p>
+        {leadingText && (
+            <div className="mb-4">
+                <Latex>{leadingText}</Latex>
+            </div>
         )}
-        <p className="mb-2"><Latex>{qnaContent.question}</Latex></p>
+        <div className="mb-2">
+            <Latex>{qnaContent.question}</Latex>
+        </div>
         <ul className="space-y-1">
           {qnaContent.answers.map((ans: { label: string, answer: string }, index: number) => (
             <li key={index}>
@@ -56,29 +66,9 @@ const FormattedMessage = ({ content }: FormattedMessageProps) => {
     );
   }
   
-  // Fallback for non-JSON or malformed content
+  // Fallback for non-JSON or malformed content, handles markdown and latex
   return (
-    <>
-      {content.split(/(\*\*.*?\*\*|\*.*?\*)/g).map((part, partIndex) => {
-        if (part.startsWith('**') && part.endsWith('**')) {
-          const boldText = part.slice(2, -2);
-          return (
-            <strong key={partIndex}>
-              <Latex>{boldText}</Latex>
-            </strong>
-          );
-        }
-        if (part.startsWith('*') && part.endsWith('*')) {
-            const italicText = part.slice(1, -1);
-            return (
-                <em key={partIndex}>
-                    <Latex>{italicText}</Latex>
-                </em>
-            );
-        }
-        return <Latex key={partIndex}>{part}</Latex>;
-      })}
-    </>
+      <Latex>{content}</Latex>
   );
 };
 
