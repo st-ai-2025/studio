@@ -8,11 +8,18 @@ type FormattedMessageProps = {
   content: string;
 };
 
+// Escapes standalone dollar signs followed by a number to prevent LaTeX parsing.
+const escapeCurrency = (text: string): string => {
+    // This regex finds a dollar sign followed by a digit.
+    // It uses a negative lookbehind `(?<!\\)` to ensure we don't escape an already-escaped dollar sign.
+    return text.replace(/(?<!\\)\$(\d)/g, '\\$$1');
+}
+
 const FormattedMessage = ({ content }: FormattedMessageProps) => {
   const jsonStartIndex = content.lastIndexOf('json{');
 
   if (jsonStartIndex === -1) {
-    return <Latex>{content}</Latex>;
+    return <Latex>{escapeCurrency(content)}</Latex>;
   }
 
   const leadingText = content.substring(0, jsonStartIndex).trim();
@@ -45,11 +52,11 @@ const FormattedMessage = ({ content }: FormattedMessageProps) => {
         trailingText = jsonBlock.substring(jsonEndIndex + 1).trim();
     } else {
         // Fallback if no matching brace is found
-        return <Latex>{content}</Latex>;
+        return <Latex>{escapeCurrency(content)}</Latex>;
     }
   } catch (e) {
     // Malformed JSON, render as is
-    return <Latex>{content}</Latex>;
+    return <Latex>{escapeCurrency(content)}</Latex>;
   }
   
   if (qnaContent && typeof qnaContent === 'object' && !Array.isArray(qnaContent) && Object.keys(qnaContent).length > 0) {
@@ -60,19 +67,19 @@ const FormattedMessage = ({ content }: FormattedMessageProps) => {
         <div>
           {leadingText && (
             <div className="mb-4">
-              <Latex>{leadingText}</Latex>
+              <Latex>{escapeCurrency(leadingText)}</Latex>
             </div>
           )}
           <ul className="space-y-1">
             {Object.entries(qnaContent).map(([label, answer]) => (
               <li key={label}>
-                <Latex>{`${label}. ${answer}`}</Latex>
+                <Latex>{escapeCurrency(`${label}. ${answer}`)}</Latex>
               </li>
             ))}
           </ul>
           {trailingText && (
               <div className="mt-4">
-                  <Latex>{trailingText}</Latex>
+                  <Latex>{escapeCurrency(trailingText)}</Latex>
               </div>
           )}
         </div>
@@ -81,7 +88,7 @@ const FormattedMessage = ({ content }: FormattedMessageProps) => {
   }
   
   // Fallback for content that doesn't match expected structures
-  return <Latex>{content}</Latex>;
+  return <Latex>{escapeCurrency(content)}</Latex>;
 };
 
 export default FormattedMessage;
