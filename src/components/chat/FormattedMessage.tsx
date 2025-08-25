@@ -12,28 +12,40 @@ const FormattedMessage = ({ content }: FormattedMessageProps) => {
   const jsonRegex = /json({[\s\S]*})/;
   const match = content.match(jsonRegex);
   let jsonContent = null;
+  let leadingText = content;
+  let qnaContent = null;
 
   if (match && match[1]) {
     try {
-      jsonContent = JSON.parse(match[1]);
+      qnaContent = JSON.parse(match[1]);
+      const jsonBlockWithOptions = `json${match[1]}`;
+      const jsonStartIndex = content.indexOf(jsonBlockWithOptions);
+      if (jsonStartIndex !== -1) {
+        leadingText = content.substring(0, jsonStartIndex);
+      }
     } catch (e) {
       // It looked like a JSON block, but wasn't valid JSON.
       // We will fall through and render the original content.
     }
   }
-  
+
   // If no JSON block was found, try parsing the whole content.
-  if (!jsonContent) {
+  if (!qnaContent) {
     try {
       jsonContent = JSON.parse(content);
     } catch (error) {
       // Not a valid JSON. Fallback to original rendering.
     }
+  } else {
+    jsonContent = qnaContent;
   }
   
   if (jsonContent && jsonContent.question && Array.isArray(jsonContent.answers)) {
     return (
       <div>
+        {leadingText && leadingText !== `json${match?.[1]}` && (
+            <p className="mb-4"><Latex>{leadingText}</Latex></p>
+        )}
         <p className="mb-2"><Latex>{jsonContent.question}</Latex></p>
         <ul className="space-y-1">
           {jsonContent.answers.map((ans: { label: string, answer: string }, index: number) => (
