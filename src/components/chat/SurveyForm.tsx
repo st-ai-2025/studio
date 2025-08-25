@@ -52,7 +52,7 @@ export default function SurveyForm({ onSubmit }: SurveyFormProps) {
               </div>
               <CardTitle className="text-2xl font-headline">Welcome to AI Tutoring Research</CardTitle>
               <CardDescription className="pt-2">
-                Help us personalize your experience by answering these questions.
+                Personalize your experience by answering the following questions.
               </CardDescription>
             </div>
             <Button variant="ghost" size="icon" onClick={signOut} aria-label="Sign out">
