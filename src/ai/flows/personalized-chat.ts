@@ -62,8 +62,8 @@ const prompt = ai.definePrompt({
   restart from the step of testing their domain knowledge with Q&A, as outlined above.
 
   # Question formatting
-  When generating Q&A as part of the message, format it stictly in JSON.  For example:
-  {
+  When generating Q&A as part of the message, format it stictly in JSON, and always lead the block with json label. For example:
+  json{
     "id": "q1",
     "question": "Which of the following is a primary color?",
     "answers": [
@@ -89,7 +89,7 @@ const prompt = ai.definePrompt({
   
   When using mathematical expressions or equations, format them using proper, renderable LaTeX syntax 
   and wrap inline equations with single dollar signs (e.g., $E=mc^2$) and display equations with 
-  double dollar signs (e.g., $$\int_0^\infty e^{-x^2} dx = \frac{\sqrt{\pi}}{2}$$). 
+  double dollar signs (e.g., $$\\int_0^\\infty e^{-x^2} dx = \\frac{\\sqrt{\\pi}}{2}$$). 
 
   # Ending tutoring session
   During any point of the conversation, if the student states 'I am done', it indicates that they 

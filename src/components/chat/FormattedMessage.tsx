@@ -9,8 +9,7 @@ type FormattedMessageProps = {
 };
 
 const FormattedMessage = ({ content }: FormattedMessageProps) => {
-  const
-    jsonRegex = /```json\s*([\s\S]*?)\s*```/;
+  const jsonRegex = /json({[\s\S]*})/;
   const match = content.match(jsonRegex);
   let jsonContent = null;
 
