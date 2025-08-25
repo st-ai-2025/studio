@@ -90,7 +90,8 @@ const prompt = ai.definePrompt({
     ]
   }
   Do not repeat the question or answer outside of the JSON block
-  Always start the json block in a new line.
+  Always finish the message before the json block with a period sign and a space, so that the
+  json block is properly separated from the rest of the message.
   
   When using mathematical expressions or equations, format them using proper, renderable LaTeX syntax 
   and wrap inline equations with single dollar signs (e.g., $E=mc^2$) and display equations with 
