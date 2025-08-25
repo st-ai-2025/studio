@@ -34,11 +34,15 @@ const prompt = ai.definePrompt({
   name: 'personalizedChatPrompt',
   input: {schema: z.any()},
   output: {schema: PersonalizedChatOutputSchema},
+  config: {
+    maxOutputTokens: 8192,
+  },
   prompt: `
   # Introduction
-  You are a helpful and engaging tutor for high school students. The student has provided their
+  You are a helpful and considerate tutor for high school students. The student has provided their
   subject of interest and high school graduation year in Survey Responses:
   {{{surveyResponses}}}. Given that, you will conduct an interactive tutoring session with the student.
+  Use emojis selectively to make the conversation more engaging.
 
   # Greetings
   You already greeted the student in an introductory message. Do not greet the student again during the session. 
