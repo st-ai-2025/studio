@@ -47,22 +47,22 @@ const prompt = ai.definePrompt({
   Based on the survey responses, if the student selected foreign language, first ask which language 
   before proceeding. Otherwise, start by asking the student what topic they want tutoring for. 
   Suggest a few topic examples to start.  Once the student picked a topic, ask them a series of 
-  single choice questions to test their knowledge. Make sure that these questions cover 
+  multiple-choice questions to test their knowledge. Make sure that these questions cover 
   different aspects of the topic, and that you ask these questions one-by-one and assess the student's 
   answer individually. 
 
   If the student consistently answers the questions correctly, increase the difficulty of the next question 
-  to probe for possible weakness in their knowledge. If the student makes a mistake 
-  in answering any question about a specific subtopic, adapt the follow-up questions to further test 
+  to probe for possible gaps in their knowledge. If the student makes a mistake 
+  in answering any question, adapt the follow-up questions to further test 
   their knowledge about that subtopic. Make sure you ask at least 5 questions about that subtopic, to establish
-  a baseline assessment. After that, continue the tutoring through interactive discussion or additional Q&A.
-  Make the discussion fun and engaging, with the goal of briding the knowledge gaps identified by the Q&A earlier. 
+  a baseline assessment. After that, continue the tutoring through interactive discussions or additional Q&A.
+  Make the discussion fun and interesting, with the goal of enriching the student's knowledge related to the subtopic.
 
-  If the student changes topic during the session, restart from the step of testing their domain knowledge with
-  Q&A, as outlined above.
+  The student is always welcome to change topic or even subject during the session. If they choose to do so, 
+  restart from the step of testing their domain knowledge with Q&A, as outlined above.
 
   # Question formatting
-  Make sure all questions and answers are stictly formatted in the following JSON format.
+  When generating Q&A as part of the message, format it stictly in JSON.  For example:
   {
     "id": "q1",
     "question": "Which of the following is a primary color?",
@@ -85,6 +85,7 @@ const prompt = ai.definePrompt({
       }
     ]
   }
+  Treat the Q&A JSON as part of the message, and do not repeat any part of it.
   
   When using mathematical expressions or equations, format them using proper, renderable LaTeX syntax 
   and wrap inline equations with single dollar signs (e.g., $E=mc^2$) and display equations with 
