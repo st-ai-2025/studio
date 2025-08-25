@@ -11,7 +11,6 @@ type FormattedMessageProps = {
 const FormattedMessage = ({ content }: FormattedMessageProps) => {
   const jsonRegex = /json({[\s\S]*})/;
   const match = content.match(jsonRegex);
-  let jsonContent = null;
   let leadingText = content;
   let qnaContent = null;
 
@@ -32,25 +31,24 @@ const FormattedMessage = ({ content }: FormattedMessageProps) => {
   // If no JSON block was found, try parsing the whole content.
   if (!qnaContent) {
     try {
-      jsonContent = JSON.parse(content);
+      qnaContent = JSON.parse(content);
+      leadingText = ''; // Whole message is JSON
     } catch (error) {
       // Not a valid JSON. Fallback to original rendering.
     }
-  } else {
-    jsonContent = qnaContent;
   }
   
-  if (jsonContent && jsonContent.question && Array.isArray(jsonContent.answers)) {
+  if (qnaContent && qnaContent.question && Array.isArray(qnaContent.answers)) {
     return (
       <div>
         {leadingText && leadingText !== `json${match?.[1]}` && (
             <p className="mb-4"><Latex>{leadingText}</Latex></p>
         )}
-        <p className="mb-2"><Latex>{jsonContent.question}</Latex></p>
+        <p className="mb-2"><Latex>{qnaContent.question}</Latex></p>
         <ul className="space-y-1">
-          {jsonContent.answers.map((ans: { label: string, answer: string }, index: number) => (
+          {qnaContent.answers.map((ans: { label: string, answer: string }, index: number) => (
             <li key={index}>
-              {ans.label}. <Latex>{ans.answer}</Latex>
+              <Latex>{`${ans.label}. ${ans.answer}`}</Latex>
             </li>
           ))}
         </ul>
@@ -65,7 +63,7 @@ const FormattedMessage = ({ content }: FormattedMessageProps) => {
         if (part.startsWith('**') && part.endsWith('**')) {
           const boldText = part.slice(2, -2);
           return (
-            <strong key={partIndex} style={{ color: 'blue' }}>
+            <strong key={partIndex}>
               <Latex>{boldText}</Latex>
             </strong>
           );
