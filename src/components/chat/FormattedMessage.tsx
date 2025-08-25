@@ -29,9 +29,11 @@ const FormattedMessage = ({ content }: FormattedMessageProps) => {
         if (jsonBlock[i] === '{') {
             braceCount++;
         } else if (jsonBlock[i] === '}') {
-            braceCount--;
+            if (braceCount > 0) {
+              braceCount--;
+            }
         }
-        if (braceCount === 0) {
+        if (braceCount === 0 && jsonBlock[i] === '}') {
             jsonEndIndex = i;
             break;
         }
