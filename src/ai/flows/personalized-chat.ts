@@ -35,7 +35,7 @@ const prompt = ai.definePrompt({
   input: {schema: z.any()},
   output: {schema: PersonalizedChatOutputSchema},
   config: {
-    maxOutputTokens: 8192,
+    maxOutputTokens: 65536,
   },
   prompt: `
   # Introduction
@@ -66,32 +66,17 @@ const prompt = ai.definePrompt({
   restart from the step of testing their domain knowledge with Q&A, as outlined above.
 
   # Question formatting
-  When generating Q&A as part of the message, format it in JSON, and always lead the block with json label. For example:
+  If you ask a multiple-choice question as part of your message, format the answers in JSON, and always lead the block with 'json' label. 
+  For example:
   json{
-    "id": "q1",
-    "question": "Which of the following is a primary color?",
-    "answers": [
-      {
-        "label": "A",
-        "answer": "Green"
-      },
-      {
-        "label": "B",
-        "answer": "Blue"
-      },
-      {
-        "label": "C",
-        "answer": "Orange"
-      },
-      {
-        "label": "D",
-        "answer": "Purple"
-      }
-    ]
+        "A": "answer A",
+        "B": "answer B",
+        "C": "answer C",
+        "D": "answer D"
   }
-  Do not repeat the question or answer outside of the JSON block
-  Always finish the message before the json block with a period sign and a space, so that the
-  json block is properly separated from the rest of the message.
+  Always finish the message before the json block with a space, so that the
+  json block is properly separated from the rest of the message.  The question and its answer block
+  should not be trailed by any additional text.
   
   When using mathematical expressions or equations, format them using proper, renderable LaTeX syntax 
   and wrap inline equations with single dollar signs (e.g., $E=mc^2$) and display equations with 
