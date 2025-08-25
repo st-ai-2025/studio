@@ -8,11 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Slider } from "@/components/ui/slider";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Textarea } from "@/components/ui/textarea";
 
 const postSurveySchema = z.object({
   understandingChange: z.array(z.number()).min(1).max(1),
   interestChange: z.array(z.number()).min(1).max(1),
   futureInterest: z.enum(["yes", "no", "not_sure"], { required_error: "Please select an option." }),
+  mostHelpful: z.string().optional(),
+  missingAspects: z.string().optional(),
 });
 
 type PostSurveyFormProps = {
@@ -25,6 +28,8 @@ export default function PostSurveyForm({ onSubmit }: PostSurveyFormProps) {
     defaultValues: {
       understandingChange: [3],
       interestChange: [3],
+      mostHelpful: "",
+      missingAspects: "",
     },
   });
 
@@ -45,6 +50,7 @@ export default function PostSurveyForm({ onSubmit }: PostSurveyFormProps) {
                             step={1}
                             defaultValue={field.value}
                             onValueChange={(value) => field.onChange(value)}
+                            className="h-3"
                         />
                         <div className="absolute top-1/2 -translate-y-1/2 w-full h-full flex justify-between items-center px-[10px] pointer-events-none">
                             {[...Array(5)].map((_, i) => (
@@ -76,6 +82,7 @@ export default function PostSurveyForm({ onSubmit }: PostSurveyFormProps) {
                             step={1}
                             defaultValue={field.value}
                             onValueChange={(value) => field.onChange(value)}
+                            className="h-3"
                         />
                         <div className="absolute top-1/2 -translate-y-1/2 w-full h-full flex justify-between items-center px-[10px] pointer-events-none">
                             {[...Array(5)].map((_, i) => (
@@ -128,6 +135,32 @@ export default function PostSurveyForm({ onSubmit }: PostSurveyFormProps) {
                 <FormMessage />
                 </FormItem>
             )}
+        />
+        <FormField
+          control={form.control}
+          name="mostHelpful"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>What aspects of the tutoring session were most helpful to you?</FormLabel>
+              <FormControl>
+                <Textarea placeholder="Your feedback..." {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="missingAspects"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>What other helpful aspects of tutoring were missing in the previous session</FormLabel>
+              <FormControl>
+                <Textarea placeholder="Your feedback..." {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
         <Button type="submit" className="w-full">Submit Feedback</Button>
       </form>

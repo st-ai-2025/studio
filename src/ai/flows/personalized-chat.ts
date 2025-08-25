@@ -62,10 +62,31 @@ const prompt = ai.definePrompt({
   Q&A, as outlined above.
 
   # Question formatting
-  Make sure all questions and their answers are clearly formatted with new lines and spacing.
-  Always start the question with a new line.  Always start each answaer with a new line, too.
+  Make sure all questions and answers are stictly formatted in the following JSON format.
+  {
+    "id": "q1",
+    "question": "Which of the following is a primary color?",
+    "answers": [
+      {
+        "label": "A",
+        "answer": "Green"
+      },
+      {
+        "label": "B",
+        "answer": "Blue"
+      },
+      {
+        "label": "C",
+        "answer": "Orange"
+      },
+      {
+        "label": "D",
+        "answer": "Purple"
+      }
+    ]
+  }
   
-  When providing mathematical expressions or equations, format them using proper, renderable LaTeX syntax 
+  When using mathematical expressions or equations, format them using proper, renderable LaTeX syntax 
   and wrap inline equations with single dollar signs (e.g., $E=mc^2$) and display equations with 
   double dollar signs (e.g., $$\int_0^\infty e^{-x^2} dx = \frac{\sqrt{\pi}}{2}$$). 
 
