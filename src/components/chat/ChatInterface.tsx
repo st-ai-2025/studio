@@ -166,9 +166,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
         surveyResponses: surveyData,
         history: updatedMessages.map(({ role, content }) => ({ role, content })),
       });
-      
-      console.log('--- Raw Gemini API Response ---', JSON.stringify(res));
-  
+        
       if (res.chatbotResponse) {
         // Re-escape backslashes for client-side rendering and storage
         const escapedResponse = res.chatbotResponse.replace(/\\/g, '\\\\');
@@ -273,7 +271,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
             {isResponding && (
                 <div className="flex items-start gap-4">
                     <Avatar className="h-10 w-10 border">
-                        <AvatarFallback><Bot className="h-5 w-5"/></AvatarFallback>
+                        <AvatarFallback className="text-xl">🧑‍🏫</AvatarFallback>
                     </Avatar>
                     <div className="flex items-center gap-2 pt-3">
                       <div className="h-2 w-2 rounded-full bg-muted-foreground animate-bounce [animation-delay:-0.3s]"></div>
@@ -336,7 +334,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
                     </AlertDialogDescription>
                     {chatStartTime && (
                         <div className="mt-4 text-sm text-foreground p-3 bg-secondary rounded-md">
-                            You have only used the tutoring chatbot for {getElapsedTime().minutes} minutes {getElapsedTime().seconds} seconds. To make your data useful for the research, it is recommended that you spend at least 15 minutes in the chat.
+                            You have only used the tutoring chatbot for {getElapsedTime().minutes} minutes {getElapsedTime().seconds} seconds. To make your data useful for this research, it is recommended that you spend at least 15 minutes in the chat.
                         </div>
                     )}
                   </AlertDialogHeader>

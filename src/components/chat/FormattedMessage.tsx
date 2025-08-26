@@ -8,10 +8,27 @@ type FormattedMessageProps = {
   content: string;
 };
 
+const applyFormatting = (text: string): React.ReactNode[] => {
+    // Split by bold and italic markers, keeping the delimiters
+    const parts = text.split(/(\*\*.*?\*\*)|(\*.*?\*)/g).filter(Boolean);
+
+    return parts.map((part, i) => {
+        if (part.startsWith('**') && part.endsWith('**')) {
+            return <strong key={i}>{part.slice(2, -2)}</strong>;
+        }
+        if (part.startsWith('*') && part.endsWith('*')) {
+            return <em key={i}>{part.slice(1, -1)}</em>;
+        }
+        return <span key={i}>{part}</span>;
+    });
+};
+
 const renderWithLatex = (text: string) => {
   if (!text) {
     return null;
   }
+  
+  // Regex to split by <math>...</math> and <blockmath>...</blockmath>
   const parts = text.split(/(<\/?(?:math|blockmath)>)/);
 
   return parts.map((part, i) => {
@@ -23,10 +40,12 @@ const renderWithLatex = (text: string) => {
       const latexContent = parts[i + 1] || '';
       return <Latex key={i}>{`$$${latexContent.replace(/\\\\/g, '\\')}$$`}</Latex>;
     }
+    // Filter out the closing tags and the content that has been processed
     if (part === '</math>' || part === '</blockmath>' || parts[i-1] === '<math>' || parts[i-1] === '<blockmath>') {
       return null;
     }
-    return <span key={i}>{part}</span>;
+    // For regular text parts, apply bold/italic formatting
+    return applyFormatting(part);
   });
 };
 
@@ -78,12 +97,15 @@ const FormattedMessage = ({ content }: FormattedMessageProps) => {
             </div>
           )}
           <ul className="space-y-1">
-            {Object.entries(qnaContent).map(([label, answer]) => (
-              <li key={label} className="flex">
-                <span className="mr-2">{label}.</span>
-                <div>{renderWithLatex(answer)}</div>
-              </li>
-            ))}
+            {Object.entries(qnaContent).map(([label, answer]) => {
+              const escapedAnswer = (answer as string).replace(/\\/g, '\\\\');
+              return (
+                <li key={label} className="flex">
+                  <span className="mr-2">{label}.</span>
+                  <div>{renderWithLatex(escapedAnswer)}</div>
+                </li>
+              );
+            })}
           </ul>
           {trailingText && (
               <div className="mt-4">

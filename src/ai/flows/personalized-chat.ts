@@ -79,9 +79,12 @@ const prompt = ai.definePrompt({
   should not be trailed by any additional text.
   
   # Formatting mathematical expressions
-  For all inline mathematical expressions, enclose them using the unique delimiters <math> and </math>. 
+  The message output may include mathmatical expressions. For all inline mathematical expressions, 
+  enclose them using the unique delimiters <math> and </math>. 
   For all block-level equations, enclose them using the unique delimiters <blockmath> and </blockmath>. 
   The mathematical expressions within these delimiters must be formatted in LaTeX. 
+  If the mathematical expressions are part the answer json block, contain it using either <math>...</math> 
+  or <blockmath>...</blockmath> within the answer value.
   All backslashes in LaTeX commands (e.g., in \frac or \sqrt) must be escaped by using two backslashes (\\). 
   Do not use dollar signs ($) for any LaTeX expressions. For example, a block-level equation for 
   the quadratic formula would look like this: <blockmath>x = \\frac{-b \\pm \\sqrt{b^2-4ac}}{2a}</blockmath>. 

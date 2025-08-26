@@ -24,7 +24,7 @@ export default function ChatMessage({ message }: ChatMessageProps) {
     <div className={cn("flex items-start gap-4", isUser && "justify-end")}>
       {!isUser && (
         <Avatar className="h-10 w-10 border">
-            <AvatarFallback><Bot className="h-5 w-5"/></AvatarFallback>
+            <AvatarFallback className="text-xl">🧑‍🏫</AvatarFallback>
         </Avatar>
       )}
       <Card className={cn(
