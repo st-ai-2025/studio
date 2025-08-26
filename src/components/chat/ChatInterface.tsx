@@ -19,27 +19,18 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { LogOut, Bot, Send, RefreshCw } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ChatMessage from "./ChatMessage";
-import PostSurveyForm from "./PostSurveyForm";
 import { generateContextAwareIntroduction } from "@/ai/flows/context-aware-introduction";
 import { personalizedChat } from "@/ai/flows/personalized-chat";
 import type { Message } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { Logo } from "../Logo";
 import { db, createUserProfile } from "@/lib/firebase";
-import { addDoc, collection, serverTimestamp, doc, setDoc, updateDoc } from "firebase/firestore";
+import { addDoc, collection, serverTimestamp, doc, setDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 
 type ChatInterfaceProps = {
@@ -57,7 +48,6 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
   const [isFirstMessage, setIsFirstMessage] = useState(true);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [showPostSurveyButton, setShowPostSurveyButton] = useState(false);
-  const [isPostSurveyOpen, setIsPostSurveyOpen] = useState(false);
   const [chatStartTime, setChatStartTime] = useState<Date | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -168,7 +158,6 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
       });
       
       if (res.chatbotResponse) {
-        // Re-escape backslashes for client-side rendering and storage
         const escapedResponse = res.chatbotResponse.replace(/\\/g, '\\\\');
         const trimmedResponse = escapedResponse.trim();
         
@@ -207,38 +196,14 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
     }
   };
   
-  const handlePostSurveySubmit = (data: Record<string, any>) => {
-    if (!user || !sessionId) {
-      toast({ variant: "destructive", title: "Error", description: "Cannot save survey. User or session is not initialized." });
+  const handleTakeSurvey = () => {
+    if (!sessionId) {
+      toast({ variant: "destructive", title: "Error", description: "Session ID is missing." });
       return;
     }
-    
-    router.push('/thank-you');
-    setIsPostSurveyOpen(false);
-    
-    const surveyResponse = {
-      ...data,
-      interestChange: data.interestChange[0],
-      understandingChange: data.understandingChange[0],
-    };
-
-    const saveSurvey = async () => {
-      try {
-        const sessionRef = doc(db, "users", user.uid, "sessions", sessionId);
-        await updateDoc(sessionRef, {
-          postSurveyResponse: surveyResponse,
-          endTime: serverTimestamp()
-        });
-        console.log("Post-chat survey submitted:", surveyResponse);
-      } catch (error) {
-        console.error("Error saving post-chat survey:", error);
-        // We don't show a toast here because the user has already navigated away.
-        // The error is logged for debugging purposes.
-      }
-    }
-
-    saveSurvey();
+    router.push(`/survey?sessionId=${sessionId}`);
   };
+
 
   return (
     <div className="flex h-screen flex-col w-[600px]">
@@ -310,19 +275,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
         </div>
         <div className="flex justify-center">
             {showPostSurveyButton ? (
-                 <Dialog open={isPostSurveyOpen} onOpenChange={setIsPostSurveyOpen}>
-                    <DialogTrigger asChild>
-                        <Button variant="outline">Take Survey</Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-h-[90vh] overflow-y-auto p-0">
-                        <DialogHeader className="p-6 pb-0">
-                          <DialogTitle>Post-Session Survey</DialogTitle>
-                        </DialogHeader>
-                        <div className="p-6">
-                          <PostSurveyForm onSubmit={handlePostSurveySubmit} />
-                        </div>
-                    </DialogContent>
-                </Dialog>
+                 <Button variant="outline" onClick={handleTakeSurvey}>Take Survey</Button>
             ) : (
                 <AlertDialog>
                 <AlertDialogTrigger asChild>

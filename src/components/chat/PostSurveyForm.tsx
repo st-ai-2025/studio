@@ -20,9 +20,10 @@ const postSurveySchema = z.object({
 
 type PostSurveyFormProps = {
   onSubmit: (data: z.infer<typeof postSurveySchema>) => void;
+  isSubmitting: boolean;
 };
 
-export default function PostSurveyForm({ onSubmit }: PostSurveyFormProps) {
+export default function PostSurveyForm({ onSubmit, isSubmitting }: PostSurveyFormProps) {
   const form = useForm<z.infer<typeof postSurveySchema>>({
     resolver: zodResolver(postSurveySchema),
     defaultValues: {
@@ -162,7 +163,9 @@ export default function PostSurveyForm({ onSubmit }: PostSurveyFormProps) {
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full">Submit Feedback</Button>
+        <Button type="submit" disabled={isSubmitting} className="w-full">
+          {isSubmitting ? "Submitting..." : "Submit Feedback"}
+        </Button>
       </form>
     </Form>
   );

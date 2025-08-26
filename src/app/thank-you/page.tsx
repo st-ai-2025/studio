@@ -22,7 +22,7 @@ export default function ThankYouPage() {
           </div>
           <CardTitle className="text-2xl font-headline">Thank You!</CardTitle>
           <CardDescription>
-            Thank you for participating in this AI tutoring research!
+            Your feedback has been submitted. Thank you for participating in this AI tutoring research!
           </CardDescription>
         </CardHeader>
         <CardContent>
