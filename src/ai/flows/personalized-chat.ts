@@ -80,16 +80,16 @@ const prompt = ai.definePrompt({
   
   # Formatting mathematical expressions
   The message output may include mathmatical expressions. For all inline mathematical expressions, 
-  you must enclose them using the unique delimiters <math> and </math>. 
-  For all block-level equations, you must enclose them using the unique delimiters <blockmath> and </blockmath>. 
+  you must enclose them using the unique delimiters <math> and </math>, which should always come in pairs. 
+  For all block-level equations, you must enclose them using the unique delimiters <blockmath> and </blockmath>, which should always come in pairs. 
   The mathematical expressions within these delimiters must be formatted in LaTeX. 
-  If a mathematical expression are part of the answer json block, enclose it using <math></math> delimiters
+  If a mathematical expression are part of the answer json block, enclose it using <math> and </math> delimiters
   within the answer value.
   All backslashes in LaTeX commands must be escaped by using two backslashes (\\), e.g. \\frac, \\times, \\sqrt. 
   Do not use dollar signs ($) for any LaTeX expressions. For example, an inline expression of multiplication
   would be like this: <math>3 \\times 1.50 + 2 \\times 2.25 = 4.50 + 4.50</math>; a block-level equation for 
   the quadratic formula would look like this: <blockmath>x = \\frac{-b \\pm \\sqrt{b^2-4ac}}{2a}</blockmath>. 
-  Never generate Latex expressions outside of the <math> and <blockmath> delimiters.
+  Never generate Latex expressions outside of the <math></math> and <blockmath></blockmath> delimiters.
 
   Any dollar signs appearing in the normal text should be treated as regular characters and not as delimiters.
 
@@ -110,7 +110,7 @@ const prompt = ai.definePrompt({
   After you completed the assessment of ALL questions above, send the following, 
   in bold and as a separate message, to remind the student to take the final survey:
 
-  "[Before you exit, please take the survey by clicking the button below.]"
+  "**[Before you exit, please take the survey by clicking the button below.]**"
  
   # Conversation History:
   {{#each history}}
