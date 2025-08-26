@@ -205,6 +205,9 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
     router.push(`/survey?sessionId=${sessionId}`);
   };
 
+  const { minutes, seconds } = getElapsedTime();
+  const isLongerThan15Mins = minutes >= 15;
+
 
   return (
     <div className="flex h-screen flex-col w-[600px]">
@@ -290,7 +293,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
                     </AlertDialogDescription>
                     {chatStartTime && (
                         <div className="mt-4 text-sm text-foreground p-3 bg-secondary rounded-md">
-                            You have only used the tutoring chatbot for {getElapsedTime().minutes} minutes {getElapsedTime().seconds} seconds. To make your data useful for this research, it is recommended that you spend at least 15 minutes in the chat.
+                            You have {isLongerThan15Mins ? '' : 'only '}used the tutoring chatbot for {minutes} minutes {seconds} seconds. To make your data useful for this research, it is recommended that you spend at least 15 minutes in the chat.
                         </div>
                     )}
                   </AlertDialogHeader>
