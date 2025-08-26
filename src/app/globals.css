@@ -15,6 +15,12 @@ body {
   margin-bottom: 0.25rem;
 }
 
+.katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 0.5rem; /* Add some padding for the scrollbar */
+}
+
 @layer base {
   :root {
     --background: 207 88% 94%;
