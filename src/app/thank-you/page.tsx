@@ -14,7 +14,7 @@ export default function ThankYouPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
       <Card className="w-full max-w-md shadow-xl text-center">
         <CardHeader>
           <div className="mx-auto mb-4">
