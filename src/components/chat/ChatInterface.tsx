@@ -2,7 +2,6 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -41,6 +40,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Logo } from "../Logo";
 import { db, createUserProfile } from "@/lib/firebase";
 import { addDoc, collection, serverTimestamp, doc, setDoc, updateDoc } from "firebase/firestore";
+import { useRouter } from "next/navigation";
 
 type ChatInterfaceProps = {
   surveyData: Record<string, any>;
@@ -170,7 +170,10 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
       console.log('--- Raw Gemini API Response ---', JSON.stringify(res));
   
       if (res.chatbotResponse) {
-        const trimmedResponse = res.chatbotResponse.trim();
+        // Re-escape backslashes for client-side rendering and storage
+        const escapedResponse = res.chatbotResponse.replace(/\\/g, '\\\\');
+        const trimmedResponse = escapedResponse.trim();
+        
         if (
           trimmedResponse.includes(
             "[Before you exit, please take the survey by clicking the button below.]"
@@ -348,3 +351,5 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
     </div>
   );
 }
+
+    

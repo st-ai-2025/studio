@@ -24,7 +24,7 @@ export async function generateContextAwareIntroduction(input: ContextAwareIntrod
   return {
     introduction: `Hi there! I am your AI tutor 🧑‍🏫. Super excited that you want to have a discussion with me today! 
 Please be aware that I am part of a science research project. Our discussion should take 
-<strong>at least 15 minutes</strong> to be effective.  As a reminder, please do NOT provide any personal 
+**at least 15 minutes**to be effective.  As a reminder, please **DO NOT** provide any personal 
 information during our chat. Are you ready to dive in?`
   };
 }
