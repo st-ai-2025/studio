@@ -47,6 +47,29 @@ type ChatInterfaceProps = {
   onResetSurvey: () => void;
 };
 
+const isJsonComplete = (text: string) => {
+  const jsonStartIndex = text.lastIndexOf("json{");
+  if (jsonStartIndex === -1) {
+    return true; // No JSON block, so it's "complete"
+  }
+  
+  const jsonBlockString = text.substring(jsonStartIndex + 4);
+  let braceCount = 0;
+  let hasStarted = false;
+
+  for (let i = 0; i < jsonBlockString.length; i++) {
+    if (jsonBlockString[i] === '{') {
+      hasStarted = true;
+      braceCount++;
+    } else if (jsonBlockString[i] === '}') {
+      if(hasStarted) braceCount--;
+    }
+  }
+
+  return hasStarted && braceCount <= 0;
+};
+
+
 export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfaceProps) {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
@@ -162,10 +185,26 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
         timestamp: serverTimestamp(),
       });
   
-      const res = await personalizedChat({
-        surveyResponses: surveyData,
-        history: updatedMessages.map(({ role, content }) => ({ role, content })),
-      });
+      let res;
+      let retries = 3;
+      let success = false;
+      while (retries > 0 && !success) {
+        res = await personalizedChat({
+          surveyResponses: surveyData,
+          history: updatedMessages.map(({ role, content }) => ({ role, content })),
+        });
+        
+        if (res.chatbotResponse && isJsonComplete(res.chatbotResponse)) {
+            success = true;
+        } else {
+            retries--;
+            console.warn(`Incomplete JSON detected, retrying... (${retries} attempts left)`);
+        }
+      }
+
+      if (!success) {
+        throw new Error("Failed to get a valid response from the AI after multiple attempts.");
+      }
         
       if (res.chatbotResponse) {
         // Re-escape backslashes for client-side rendering and storage
@@ -314,13 +353,15 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
                     <DialogTrigger asChild>
                         <Button variant="outline">Take Survey</Button>
                     </DialogTrigger>
-                    <DialogContent className="max-h-[90vh]">
+                    <DialogContent className="max-h-[90vh] flex flex-col">
                         <DialogHeader>
-                        <DialogTitle>Post-Session Survey</DialogTitle>
+                          <DialogTitle>Post-Session Survey</DialogTitle>
                         </DialogHeader>
-                        <ScrollArea className="pr-4 -mr-6">
-                            <PostSurveyForm onSubmit={handlePostSurveySubmit} />
-                        </ScrollArea>
+                        <div className="flex-1 overflow-hidden">
+                          <ScrollArea className="h-full pr-6 -mr-6">
+                              <PostSurveyForm onSubmit={handlePostSurveySubmit} />
+                          </ScrollArea>
+                        </div>
                     </DialogContent>
                 </Dialog>
             ) : (
@@ -351,3 +392,4 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
     </div>
   );
 }
+ 
