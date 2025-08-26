@@ -7,9 +7,12 @@ export const ai = genkit({
       apiVersion: 'v2',
     }),
   ],
-  model: 'googleai/gemini-2.5-flash-lite',
+  model: 'googleai/gemini-2.5-flash',
   config: {
     temperature: 0.7,
     maxOutputTokens: 65536,
+    thinkingConfig: {
+      thinkingBudget: -1,
+    },
   },
 });
