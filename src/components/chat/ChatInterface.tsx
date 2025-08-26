@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -166,6 +167,8 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
         surveyResponses: surveyData,
         history: updatedMessages.map(({ role, content }) => ({ role, content })),
       });
+      
+      console.log('--- Raw Gemini API Response ---', JSON.stringify(res));
   
       if (res.chatbotResponse) {
         const trimmedResponse = res.chatbotResponse.trim();
