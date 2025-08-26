@@ -12,7 +12,7 @@ export const ai = genkit({
     temperature: 0.7,
     maxOutputTokens: 65536,
     thinkingConfig: {
-      thinkingBudget: 0,
+      thinkingBudget: -1,
     },
   },
 });

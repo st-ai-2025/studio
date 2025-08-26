@@ -71,9 +71,10 @@ const prompt = ai.definePrompt({
         "C": "answer C",
         "D": "answer D"
   }
-  Always finish the message before the json block with a space, so that the
-  json block is properly separated from the rest of the message.  The question and its answer block
-  should not be trailed by any additional text.
+  Always finish the message before the answers block with a space, so that the
+  answers block is properly separated from the rest of the message.  
+  The question and its answer block should not be trailed by any additional text.
+  Never ask a question without providing answer options.
   
   # Formatting mathematical expressions
   The message output may include mathmatical expressions. For all inline mathematical expressions, 
