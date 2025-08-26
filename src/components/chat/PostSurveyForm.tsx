@@ -143,7 +143,7 @@ export default function PostSurveyForm({ onSubmit }: PostSurveyFormProps) {
             <FormItem>
               <FormLabel>What aspects of the tutoring session were most helpful to you?</FormLabel>
               <FormControl>
-                <Textarea placeholder="Your feedback..." {...field} />
+                <Textarea placeholder="Your feedback..." {...field} className="text-sm" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -156,7 +156,7 @@ export default function PostSurveyForm({ onSubmit }: PostSurveyFormProps) {
             <FormItem>
               <FormLabel>What other helpful aspects of tutoring were missing in the previous session</FormLabel>
               <FormControl>
-                <Textarea placeholder="Your feedback..." {...field} />
+                <Textarea placeholder="Your feedback..." {...field} className="text-sm" />
               </FormControl>
               <FormMessage />
             </FormItem>
