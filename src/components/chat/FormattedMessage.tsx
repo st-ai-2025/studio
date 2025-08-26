@@ -14,7 +14,11 @@ const applyFormatting = (text: string): React.ReactNode[] => {
 
     return parts.map((part, i) => {
         if (part.startsWith('**') && part.endsWith('**')) {
-            return <strong key={i}>{part.slice(2, -2)}</strong>;
+            const content = part.slice(2, -2);
+            if (content === '[Before you exit, please take the survey by clicking the button below.]') {
+              return <strong key={i} className="text-primary">{content}</strong>
+            }
+            return <strong key={i}>{content}</strong>;
         }
         if (part.startsWith('*') && part.endsWith('*')) {
             return <em key={i}>{part.slice(1, -1)}</em>;

@@ -22,8 +22,7 @@ export type ContextAwareIntroductionOutput = z.infer<typeof ContextAwareIntroduc
 
 export async function generateContextAwareIntroduction(input: ContextAwareIntroductionInput): Promise<ContextAwareIntroductionOutput> {
   return {
-    introduction: `Hi there! I am your AI tutor 🧑‍🏫. Super excited that you want to have a discussion with me today! Please be aware that I am part of a science research project. 
-    Our discussion should take **at least 15 minutes** to be effective for this research.  
+    introduction: `Hi there! I am your AI tutor. Super excited that you want to have a discussion with me today! Please be aware that I am part of a science research project. Our session should take **at least 15 minutes** to be effective for this research.  
     Please **DO NOT** provide any personal information during our chat. Are you ready to dive in?`
   };
 }
