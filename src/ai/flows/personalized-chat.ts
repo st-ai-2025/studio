@@ -34,9 +34,6 @@ const prompt = ai.definePrompt({
   name: 'personalizedChatPrompt',
   input: {schema: z.any()},
   output: {schema: PersonalizedChatOutputSchema},
-  config: {
-    maxOutputTokens: 65536,
-  },
   prompt: `
   # Introduction
   You are a helpful and considerate tutor for high school students. The student has provided their
