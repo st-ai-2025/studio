@@ -65,7 +65,7 @@ const prompt = ai.definePrompt({
   The student is always welcome to change topic or even subject during the session. If they choose to do so, 
   restart from the step of testing their domain knowledge with Q&A, as outlined above.
 
-  # Question formatting
+  # Formatting Q&A
   If you ask a multiple-choice question as part of your message, format the answers in JSON, and always lead the block with 'json' label. 
   For example:
   json{
@@ -78,9 +78,14 @@ const prompt = ai.definePrompt({
   json block is properly separated from the rest of the message.  The question and its answer block
   should not be trailed by any additional text.
   
-  When using mathematical expressions or equations, format them using proper, renderable LaTeX syntax 
-  and wrap inline equations with single dollar signs (e.g., $E=mc^2$) and display equations with 
-  double dollar signs (e.g., $$\\int_0^\\infty e^{-x^2} dx = \\frac{\\sqrt{\\pi}}{2}$$). 
+  # Formatting mathematical expressions
+  For all inline mathematical expressions, enclose them using the unique delimiters <math> and </math>. 
+  For all block-level equations, enclose them using the unique delimiters <blockmath> and </blockmath>. 
+  The mathematical expressions within these delimiters must be formatted in LaTeX. 
+  All backslashes in LaTeX commands (e.g., in \frac or \sqrt) must be escaped by using two backslashes (\\). 
+  Do not use dollar signs ($) for any LaTeX expressions. For example, a block-level equation for 
+  the quadratic formula would look like this: <blockmath>x = \\frac{-b \\pm \\sqrt{b^2-4ac}}{2a}</blockmath>. 
+  Any dollar signs appearing in the normal text should be treated as regular characters and not as delimiters.
 
   # Ending tutoring session
   During any point of the conversation, if the student states 'I am done', it indicates that they 

@@ -8,87 +8,94 @@ type FormattedMessageProps = {
   content: string;
 };
 
-// Escapes standalone dollar signs followed by a number to prevent LaTeX parsing.
-const escapeCurrency = (text: string): string => {
-    // This regex finds a dollar sign followed by a digit.
-    // It uses a negative lookbehind `(?<!\\)` to ensure we don't escape an already-escaped dollar sign.
-    return text.replace(/(?<!\\)\$(\d)/g, '\\$$1');
-}
+const renderWithLatex = (text: string) => {
+  if (!text) {
+    return null;
+  }
+  const parts = text.split(/(<\/?(?:math|blockmath)>)/);
+
+  return parts.map((part, i) => {
+    if (part === '<math>') {
+      const latexContent = parts[i + 1] || '';
+      return <Latex key={i}>{`$${latexContent.replace(/\\\\/g, '\\')}$`}</Latex>;
+    }
+    if (part === '<blockmath>') {
+      const latexContent = parts[i + 1] || '';
+      return <Latex key={i}>{`$$${latexContent.replace(/\\\\/g, '\\')}$$`}</Latex>;
+    }
+    if (part === '</math>' || part === '</blockmath>' || parts[i-1] === '<math>' || parts[i-1] === '<blockmath>') {
+      return null;
+    }
+    return <span key={i}>{part}</span>;
+  });
+};
+
 
 const FormattedMessage = ({ content }: FormattedMessageProps) => {
   const jsonStartIndex = content.lastIndexOf('json{');
 
   if (jsonStartIndex === -1) {
-    return <Latex>{escapeCurrency(content)}</Latex>;
+    return <>{renderWithLatex(content)}</>;
   }
 
   const leadingText = content.substring(0, jsonStartIndex).trim();
-  const jsonBlock = content.substring(jsonStartIndex + 4); // +4 to skip "json"
+  const jsonBlockString = content.substring(jsonStartIndex + 4);
 
   let qnaContent: Record<string, string> | null = null;
   let trailingText = '';
 
   try {
-    // Find the matching closing brace for the json content
     let braceCount = 0;
     let jsonEndIndex = -1;
-    for (let i = 0; i < jsonBlock.length; i++) {
-        if (jsonBlock[i] === '{') {
+    for (let i = 0; i < jsonBlockString.length; i++) {
+        if (jsonBlockString[i] === '{') {
             braceCount++;
-        } else if (jsonBlock[i] === '}') {
-            if (braceCount > 0) {
-              braceCount--;
-            }
+        } else if (jsonBlockString[i] === '}') {
+            braceCount--;
         }
-        if (braceCount === 0 && jsonBlock[i] === '}') {
+        if (braceCount === 0 && jsonBlockString[i] === '}') {
             jsonEndIndex = i;
             break;
         }
     }
 
     if (jsonEndIndex !== -1) {
-        const jsonString = jsonBlock.substring(0, jsonEndIndex + 1);
+        const jsonString = jsonBlockString.substring(0, jsonEndIndex + 1);
         qnaContent = JSON.parse(jsonString);
-        trailingText = jsonBlock.substring(jsonEndIndex + 1).trim();
-    } else {
-        // Fallback if no matching brace is found
-        return <Latex>{escapeCurrency(content)}</Latex>;
+        trailingText = jsonBlockString.substring(jsonEndIndex + 1).trim();
     }
   } catch (e) {
     // Malformed JSON, render as is
-    return <Latex>{escapeCurrency(content)}</Latex>;
+    return <>{renderWithLatex(content)}</>;
   }
   
   if (qnaContent && typeof qnaContent === 'object' && !Array.isArray(qnaContent) && Object.keys(qnaContent).length > 0) {
-    const isAnswerBlock = Object.keys(qnaContent).every(key => typeof key === 'string' && typeof qnaContent![key] === 'string');
-    
-    if (isAnswerBlock) {
       return (
         <div>
           {leadingText && (
             <div className="mb-4">
-              <Latex>{escapeCurrency(leadingText)}</Latex>
+              {renderWithLatex(leadingText)}
             </div>
           )}
           <ul className="space-y-1">
             {Object.entries(qnaContent).map(([label, answer]) => (
-              <li key={label}>
-                <Latex>{escapeCurrency(`${label}. ${answer}`)}</Latex>
+              <li key={label} className="flex">
+                <span className="mr-2">{label}.</span>
+                <div>{renderWithLatex(answer)}</div>
               </li>
             ))}
           </ul>
           {trailingText && (
               <div className="mt-4">
-                  <Latex>{escapeCurrency(trailingText)}</Latex>
+                  {renderWithLatex(trailingText)}
               </div>
           )}
         </div>
       );
-    }
   }
   
   // Fallback for content that doesn't match expected structures
-  return <Latex>{escapeCurrency(content)}</Latex>;
+  return <>{renderWithLatex(content)}</>;
 };
 
 export default FormattedMessage;
