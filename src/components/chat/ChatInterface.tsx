@@ -47,29 +47,6 @@ type ChatInterfaceProps = {
   onResetSurvey: () => void;
 };
 
-const isJsonComplete = (text: string) => {
-  const jsonStartIndex = text.lastIndexOf("json{");
-  if (jsonStartIndex === -1) {
-    return true; // No JSON block, so it's "complete"
-  }
-  
-  const jsonBlockString = text.substring(jsonStartIndex + 4);
-  let braceCount = 0;
-  let hasStarted = false;
-
-  for (let i = 0; i < jsonBlockString.length; i++) {
-    if (jsonBlockString[i] === '{') {
-      hasStarted = true;
-      braceCount++;
-    } else if (jsonBlockString[i] === '}') {
-      if(hasStarted) braceCount--;
-    }
-  }
-
-  return hasStarted && braceCount <= 0;
-};
-
-
 export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfaceProps) {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
@@ -146,19 +123,19 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
       });
       return;
     }
-  
+
     const userMessageContent = input.trim();
     const userMessage = {
       content: userMessageContent,
       role: "user" as const,
       userId: user.uid,
     };
-  
+
     const updatedMessages = [...messages, userMessage];
     setMessages(updatedMessages);
     setInput("");
     setIsResponding(true);
-  
+
     try {
       if (isFirstMessage) {
         setChatStartTime(new Date());
@@ -170,7 +147,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
         });
         setIsFirstMessage(false);
       }
-  
+
       const messagesCollectionRef = collection(
         db,
         "users",
@@ -179,33 +156,17 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
         sessionId,
         "messages"
       );
-  
+
       await addDoc(messagesCollectionRef, {
         ...userMessage,
         timestamp: serverTimestamp(),
       });
-  
-      let res;
-      let retries = 3;
-      let success = false;
-      while (retries > 0 && !success) {
-        res = await personalizedChat({
-          surveyResponses: surveyData,
-          history: updatedMessages.map(({ role, content }) => ({ role, content })),
-        });
-        
-        if (res.chatbotResponse && isJsonComplete(res.chatbotResponse)) {
-            success = true;
-        } else {
-            retries--;
-            console.warn(`Incomplete JSON detected, retrying... (${retries} attempts left)`);
-        }
-      }
 
-      if (!success) {
-        throw new Error("Failed to get a valid response from the AI after multiple attempts.");
-      }
-        
+      const res = await personalizedChat({
+        surveyResponses: surveyData,
+        history: updatedMessages.map(({ role, content }) => ({ role, content })),
+      });
+      
       if (res.chatbotResponse) {
         // Re-escape backslashes for client-side rendering and storage
         const escapedResponse = res.chatbotResponse.replace(/\\/g, '\\\\');
@@ -218,15 +179,15 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
         ) {
           setShowPostSurveyButton(true);
         }
-  
+
         const assistantMessage = {
           content: trimmedResponse,
           role: "assistant" as const,
           userId: user.uid,
         };
-  
+
         setMessages((prevMessages) => [...prevMessages, assistantMessage]);
-  
+
         await addDoc(messagesCollectionRef, {
           ...assistantMessage,
           timestamp: serverTimestamp(),
@@ -392,4 +353,3 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
     </div>
   );
 }
- 
