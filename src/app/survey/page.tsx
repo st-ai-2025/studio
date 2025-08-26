@@ -90,7 +90,11 @@ function SurveyContent() {
 
 export default function SurveyPage() {
     return (
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={
+            <div className="flex h-screen items-center justify-center bg-background">
+                <Logo className="h-16 w-16 animate-pulse" />
+            </div>
+        }>
             <SurveyContent />
         </Suspense>
     )
