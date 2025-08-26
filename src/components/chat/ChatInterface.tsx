@@ -318,8 +318,8 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
                         <DialogHeader>
                           <DialogTitle>Post-Session Survey</DialogTitle>
                         </DialogHeader>
-                        <div className="flex-1 overflow-hidden">
-                          <ScrollArea className="h-full pr-6 -mr-6">
+                        <div className="flex-1 overflow-y-auto">
+                          <ScrollArea className="h-full">
                               <PostSurveyForm onSubmit={handlePostSurveySubmit} />
                           </ScrollArea>
                         </div>
@@ -353,3 +353,5 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
     </div>
   );
 }
+
+    
