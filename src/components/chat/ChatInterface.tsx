@@ -314,14 +314,12 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
                     <DialogTrigger asChild>
                         <Button variant="outline">Take Survey</Button>
                     </DialogTrigger>
-                    <DialogContent className="max-h-[90vh] flex flex-col">
-                        <DialogHeader>
+                    <DialogContent className="max-h-[90vh] overflow-y-auto p-0">
+                        <DialogHeader className="p-6 pb-0">
                           <DialogTitle>Post-Session Survey</DialogTitle>
                         </DialogHeader>
-                        <div className="flex-1 overflow-y-auto">
-                          <ScrollArea className="h-full">
-                              <PostSurveyForm onSubmit={handlePostSurveySubmit} />
-                          </ScrollArea>
+                        <div className="p-6">
+                          <PostSurveyForm onSubmit={handlePostSurveySubmit} />
                         </div>
                     </DialogContent>
                 </Dialog>
@@ -353,5 +351,3 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
     </div>
   );
 }
-
-    
