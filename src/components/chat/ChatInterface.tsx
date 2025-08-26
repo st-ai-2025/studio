@@ -41,7 +41,6 @@ import { useToast } from "@/hooks/use-toast";
 import { Logo } from "../Logo";
 import { db, createUserProfile } from "@/lib/firebase";
 import { addDoc, collection, serverTimestamp, doc, setDoc, updateDoc } from "firebase/firestore";
-import { useRouter } from "next/navigation";
 
 type ChatInterfaceProps = {
   surveyData: Record<string, any>;
