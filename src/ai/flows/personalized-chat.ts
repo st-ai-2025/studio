@@ -61,25 +61,12 @@ const prompt = ai.definePrompt({
 
   The student is always welcome to change topic or even subject during the session. If they choose to do so, 
   restart from the step of testing their domain knowledge with Q&A, as outlined above.
-
-  # Formatting Q&A
-  If you ask a multiple-choice question as part of your message, format the answers in JSON, and always lead the block with 'json' label. 
-  For example:
-  json{
-        "A": "answer A",
-        "B": "answer B",
-        "C": "answer C",
-        "D": "answer D"
-  }
-  Always finish the message before the answers block with a space, so that the
-  answers block is properly separated from the rest of the message.  
-  The question and its answer block should not be trailed by any additional text.
-  Never ask a question without providing answer options.
   
   # Formatting mathematical expressions
   The message output may include mathmatical expressions. For all inline mathematical expressions, 
   you must enclose them using the unique delimiters <math> and </math>, which should always come in pairs. 
-  For all block-level equations, you must enclose them using the unique delimiters <blockmath> and </blockmath>, which should always come in pairs. 
+  For all block-level equations, you must enclose them using the unique delimiters <blockmath> and </blockmath>, 
+  which should always come in pairs. 
   The mathematical expressions within these delimiters must be formatted in LaTeX. 
   If a mathematical expression are part of the answer json block, enclose it using <math> and </math> delimiters
   within the answer value.
