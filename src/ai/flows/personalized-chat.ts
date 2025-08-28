@@ -63,8 +63,17 @@ const prompt = ai.definePrompt({
   restart from the step of testing their domain knowledge with Q&A, as outlined above.
 
   # Formatting Q&A
-  Always start the question and each answer option in a new line.
-  
+  When generating a Q&A block as part of the response, use the following format:
+  qalock:{
+    question: {question text},
+    answers: {
+      "A": "answer A",
+      "B": "answer B",
+      "C": "answer C",
+      "D": "answer D",
+    }
+  }
+    
   # Formatting mathematical expressions
   The message output may include mathmatical expressions. For all inline mathematical expressions, 
   you must enclose them using the unique delimiters <math> and </math>, which should always come in pairs. 
@@ -74,6 +83,7 @@ const prompt = ai.definePrompt({
   If a mathematical expression are part of the answer json block, enclose it using <math> and </math> delimiters
   within the answer value.
   All backslashes in LaTeX commands must be escaped by using two backslashes (\\), e.g. \\frac, \\times, \\sqrt. 
+  However, do not use two backslashes for special characters that are not in mathematical expressions, e.g. '\n', '\t'.
   Do not use dollar signs ($) for any LaTeX expressions. For example, an inline expression of multiplication
   would be like this: <math>3 \\times 1.50 + 2 \\times 2.25 = 4.50 + 4.50</math>; a block-level equation for 
   the quadratic formula would look like this: <blockmath>x = \\frac{-b \\pm \\sqrt{b^2-4ac}}{2a}</blockmath>. 
