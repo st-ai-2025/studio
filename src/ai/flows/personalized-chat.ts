@@ -70,7 +70,7 @@ const prompt = ai.definePrompt({
       "A": "answer A",
       "B": "answer B",
       "C": "answer C",
-      "D": "answer D",
+      "D": "answer D"
     }
   }
     

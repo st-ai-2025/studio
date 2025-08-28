@@ -54,60 +54,54 @@ const renderWithLatex = (text: string) => {
 };
 
 const renderQaBlock = (text: string) => {
-  const qaRegex = /qa_block:({[\s\S]*?})/g;
-  const parts = text.split(qaRegex);
+  const qaRegex = /qa_block:({[\s\S]+?})(?=\n\n|\n\s*\n|$)/g;
+  
+  let lastIndex = 0;
+  const elements: React.ReactNode[] = [];
+  let match;
 
-  return parts.map((part, index) => {
-    if (index % 2 === 1) { // This is a qa_block
-      try {
-        // The regex might capture trailing characters, so we need to find the correct closing brace
-        let braceCount = 0;
-        let jsonEndIndex = -1;
-        for (let i = 0; i < part.length; i++) {
-          if (part[i] === '{') {
-            braceCount++;
-          } else if (part[i] === '}') {
-            braceCount--;
-            if (braceCount === 0) {
-              jsonEndIndex = i;
-              break;
-            }
-          }
-        }
-
-        if (jsonEndIndex === -1) {
-            // Malformed JSON, render as plain text
-            return renderWithLatex(`qa_block:${part}`);
-        }
-
-        const jsonString = part.substring(0, jsonEndIndex + 1);
-        const qaData = JSON.parse(jsonString);
-
-        return (
-          <div key={index} className="space-y-2">
-            <div className="font-semibold">{renderWithLatex(qaData.question)}</div>
-            {Object.entries(qaData.answers).map(([key, value]) => (
-              <div key={key}>{renderWithLatex(`${key}: ${value}`)}</div>
-            ))}
-          </div>
-        );
-      } catch (error) {
-        console.error("Error parsing qa_block:", error);
-        // If parsing fails, render the original block
-        return renderWithLatex(`qa_block:${part}`);
-      }
-    } else {
-      return renderWithLatex(part);
+  while ((match = qaRegex.exec(text)) !== null) {
+    // Add text before the match
+    if (match.index > lastIndex) {
+      elements.push(renderWithLatex(text.substring(lastIndex, match.index)));
     }
-  });
+    
+    try {
+      const jsonString = match[1];
+      const qaData = JSON.parse(jsonString);
+
+      elements.push(
+        <div key={match.index} className="space-y-2 my-4">
+          <div className="font-semibold">{renderWithLatex(qaData.question)}</div>
+          {Object.entries(qaData.answers).map(([key, value]) => (
+            <div key={key}>{renderWithLatex(`${key}: ${value}`)}</div>
+          ))}
+        </div>
+      );
+    } catch (error) {
+      console.error("Error parsing qa_block:", error);
+      // If parsing fails, render the original block as plain text
+      elements.push(renderWithLatex(match[0]));
+    }
+    
+    lastIndex = qaRegex.lastIndex;
+  }
+
+  // Add any remaining text after the last match
+  if (lastIndex < text.length) {
+    elements.push(renderWithLatex(text.substring(lastIndex)));
+  }
+
+  return elements;
 };
 
 const FormattedMessage = ({ content }: FormattedMessageProps) => {
-  // Split the content by lines to handle paragraphs
+  // Split the content by newlines to process paragraph by paragraph
+  // This helps in isolating qa_blocks that might span multiple lines
   const paragraphs = content.split('\n').map((p, i) => (
-    <p key={i} className="my-1">
+    <div key={i} className="my-1">
       {renderQaBlock(p)}
-    </p>
+    </div>
   ));
   
   return <>{paragraphs}</>;
