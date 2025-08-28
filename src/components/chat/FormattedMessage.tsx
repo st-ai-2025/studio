@@ -18,7 +18,7 @@ const applyFormatting = (text: string): React.ReactNode[] => {
             if (content === '[Before you exit, please take the survey by clicking the button below.]') {
               return <strong key={i} className="text-primary">{content}</strong>
             }
-            return <strong key={i}>{content}</strong>;
+            return <strong key={i} className="text-[#0018F9]">{content}</strong>;
         }
         if (part.startsWith('*') && part.endsWith('*')) {
             return <em key={i}>{part.slice(1, -1)}</em>;
@@ -54,13 +54,13 @@ const renderWithLatex = (text: string) => {
 };
 
 const renderQaBlock = (text: string) => {
-  const qaRegex = /qa_block:({[\s\S]+?})(?=\n\n|\n\s*\n|$)/g;
+  const qaRegex = /qa_block:({[\s\S]+?})(?=\n\n|\n\s*\n|$)/;
   
   let lastIndex = 0;
   const elements: React.ReactNode[] = [];
-  let match;
+  const match = text.match(qaRegex);
 
-  while ((match = qaRegex.exec(text)) !== null) {
+  if (match) {
     // Add text before the match
     if (match.index > lastIndex) {
       elements.push(renderWithLatex(text.substring(lastIndex, match.index)));
@@ -84,7 +84,7 @@ const renderQaBlock = (text: string) => {
       elements.push(renderWithLatex(match[0]));
     }
     
-    lastIndex = qaRegex.lastIndex;
+    lastIndex = match.index + match[0].length;
   }
 
   // Add any remaining text after the last match
