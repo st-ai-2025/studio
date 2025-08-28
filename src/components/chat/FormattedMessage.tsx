@@ -72,7 +72,10 @@ const renderQaBlock = (text: string) => {
 
       elements.push(
         <div key={match.index} className="space-y-2 my-4">
-          <div className="font-semibold">{renderWithLatex(qaData.question)}</div>
+          <div>
+            <span className="font-semibold">Question: </span>
+            {renderWithLatex(qaData.question)}
+          </div>
           {Object.entries(qaData.answers).map(([key, value]) => (
             <div key={key}>{renderWithLatex(`${key}: ${value}`)}</div>
           ))}
