@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from 'react';
@@ -53,11 +54,11 @@ const renderWithLatex = (text: string) => {
 };
 
 const renderQaBlock = (text: string) => {
-  const qaRegex = /qalock:({[\s\S]*?})/g;
+  const qaRegex = /qa_block:({[\s\S]*?})/g;
   const parts = text.split(qaRegex);
 
   return parts.map((part, index) => {
-    if (index % 2 === 1) { // This is a qalock
+    if (index % 2 === 1) { // This is a qa_block
       try {
         // The regex might capture trailing characters, so we need to find the correct closing brace
         let braceCount = 0;
@@ -76,37 +77,24 @@ const renderQaBlock = (text: string) => {
 
         if (jsonEndIndex === -1) {
             // Malformed JSON, render as plain text
-            return renderWithLatex(`qalock:${part}`);
+            return renderWithLatex(`qa_block:${part}`);
         }
 
         const jsonString = part.substring(0, jsonEndIndex + 1);
-        
-        // This is a bit of a hack, but since the source isn't valid JSON, we parse it manually
-        const questionMatch = jsonString.match(/question:\s*{(.*?)}/s);
-        const answersMatch = jsonString.match(/answers:\s*{([\s\S]*?)}/s);
-
-        if (!questionMatch || !answersMatch) {
-          throw new Error("Invalid qalock structure");
-        }
-
-        const question = questionMatch[1].trim();
-        const answersContent = `{${answersMatch[1]}}`;
-        // Replace single quotes and fix keys for JSON parsing
-        const validJsonAnswers = answersContent.replace(/'/g, '"').replace(/(\w+):/g, '"$1":');
-        const answers = JSON.parse(validJsonAnswers);
+        const qaData = JSON.parse(jsonString);
 
         return (
           <div key={index} className="space-y-2">
-            <div>{renderWithLatex(question)}</div>
-            {Object.entries(answers).map(([key, value]) => (
+            <div className="font-semibold">{renderWithLatex(qaData.question)}</div>
+            {Object.entries(qaData.answers).map(([key, value]) => (
               <div key={key}>{renderWithLatex(`${key}: ${value}`)}</div>
             ))}
           </div>
         );
       } catch (error) {
-        console.error("Error parsing qalock:", error);
+        console.error("Error parsing qa_block:", error);
         // If parsing fails, render the original block
-        return renderWithLatex(`qalock:${part}`);
+        return renderWithLatex(`qa_block:${part}`);
       }
     } else {
       return renderWithLatex(part);
@@ -115,7 +103,14 @@ const renderQaBlock = (text: string) => {
 };
 
 const FormattedMessage = ({ content }: FormattedMessageProps) => {
-  return <>{renderQaBlock(content)}</>;
+  // Split the content by lines to handle paragraphs
+  const paragraphs = content.split('\n').map((p, i) => (
+    <p key={i} className="my-1">
+      {renderQaBlock(p)}
+    </p>
+  ));
+  
+  return <>{paragraphs}</>;
 };
 
 export default FormattedMessage;

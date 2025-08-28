@@ -64,9 +64,9 @@ const prompt = ai.definePrompt({
 
   # Formatting Q&A
   When generating a Q&A block as part of the response, use the following format:
-  qalock:{
-    question: {question text},
-    answers: {
+  qa_block:{
+    "question": "question text",
+    "answers": {
       "A": "answer A",
       "B": "answer B",
       "C": "answer C",
