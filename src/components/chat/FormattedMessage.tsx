@@ -16,7 +16,7 @@ const applyFormatting = (text: string): React.ReactNode[] => {
         if (part.startsWith('**') && part.endsWith('**')) {
             const content = part.slice(2, -2);
             if (content === '[Before you exit, please take the survey by clicking the button below.]') {
-              return <strong key={i} className="text-primary">{content}</strong>
+              return <strong key={i} className="text-destructive">{content}</strong>
             }
             return <strong key={i} className="text-[#0018F9]">{content}</strong>;
         }
