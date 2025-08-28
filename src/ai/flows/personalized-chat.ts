@@ -61,6 +61,9 @@ const prompt = ai.definePrompt({
 
   The student is always welcome to change topic or even subject during the session. If they choose to do so, 
   restart from the step of testing their domain knowledge with Q&A, as outlined above.
+
+  # Formatting Q&A
+  Always start the question and each answer option in a new line.
   
   # Formatting mathematical expressions
   The message output may include mathmatical expressions. For all inline mathematical expressions, 
