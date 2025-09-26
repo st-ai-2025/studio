@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect } from 'react';
+import { useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Logo } from '../Logo';
 import { useAuth } from '@/hooks/use-auth';
@@ -14,39 +14,25 @@ type ConsentFormProps = {
 
 export default function ConsentForm({ onConsent }: ConsentFormProps) {
   const { signOut } = useAuth();
-
-  useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      if (
-        event.origin === 'https://form.jotform.com' &&
-        event.data &&
-        typeof event.data === 'string'
-      ) {
-        try {
-          const data = JSON.parse(event.data);
-          if (data.action === 'submission-completed') {
-            console.log('Jotform submission completed');
-            onConsent();
-          }
-        } catch (error) {
-          // Not a JSON message, ignore
-        }
-      }
-    };
-
-    window.addEventListener('message', handleMessage);
-
-    return () => {
-      window.removeEventListener('message', handleMessage);
-    };
-  }, [onConsent]);
+  const popupIntervalRef = useRef<NodeJS.Timeout | null>(null);
   
   const openConsentForm = () => {
-    window.open(
+    const popup = window.open(
       'https://form.jotform.com/252686065152156',
       'blank',
       'scrollbars=yes,toolbar=no,width=700,height=500'
     );
+
+    if (popup) {
+      popupIntervalRef.current = setInterval(() => {
+        if (popup.closed) {
+          if(popupIntervalRef.current) {
+            clearInterval(popupIntervalRef.current);
+          }
+          onConsent();
+        }
+      }, 500); // Check every 500ms
+    }
   };
 
   return (
@@ -57,9 +43,9 @@ export default function ConsentForm({ onConsent }: ConsentFormProps) {
               <div className="mx-auto mb-4 inline-block">
                   <Logo />
               </div>
-              <CardTitle className="text-2xl font-headline">Consent Form for Research</CardTitle>
+              <CardTitle className="text-2xl font-headline">Consent to Participate</CardTitle>
               <CardDescription className="pt-2">
-                Please click the button below to open and sign the consent form in a pop-up window.
+                Please ask your parent/guardian to sign the consent form below before proceeding.
               </CardDescription>
             </div>
             <Button variant="ghost" size="icon" onClick={signOut} aria-label="Sign out">
