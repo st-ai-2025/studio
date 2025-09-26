@@ -4,11 +4,13 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
+import ConsentForm from "@/components/chat/ConsentForm";
 import SurveyForm from "@/components/chat/SurveyForm";
 import ChatInterface from "@/components/chat/ChatInterface";
 import { Logo } from "@/components/Logo";
 
 export default function ChatPage() {
+  const [hasConsented, setHasConsented] = useState(false);
   const [surveyData, setSurveyData] = useState<Record<string, any> | null>(null);
   const { user, loading } = useAuth();
   const router = useRouter();
@@ -19,12 +21,17 @@ export default function ChatPage() {
     }
   }, [user, loading, router]);
 
+  const handleConsent = () => {
+    setHasConsented(true);
+  };
+
   const handleSurveySubmit = (data: Record<string, any>) => {
     setSurveyData(data);
   };
   
   const handleResetSurvey = () => {
     setSurveyData(null);
+    setHasConsented(false);
   }
 
   if (loading || !user) {
@@ -37,7 +44,9 @@ export default function ChatPage() {
 
   return (
     <div className="h-screen bg-background flex items-start justify-center pt-12">
-      {!surveyData ? (
+      {!hasConsented ? (
+        <ConsentForm onConsent={handleConsent} />
+      ) : !surveyData ? (
         <SurveyForm onSubmit={handleSurveySubmit} />
       ) : (
         <ChatInterface

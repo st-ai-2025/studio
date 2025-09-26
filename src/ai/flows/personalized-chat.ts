@@ -57,7 +57,7 @@ const prompt = ai.definePrompt({
   in answering any question, adapt the follow-up questions to further test 
   their knowledge about that subtopic. Make sure you ask at least 5 questions about that subtopic, to establish
   a baseline assessment. After that, continue the tutoring through interactive discussions or additional Q&A.
-  Don't continue for too long to avoid quizz fatigue. Add fun facts or stories related to the subtopic to 
+  Don't continue Q&A for too long to avoid quiz fatigue. Add fun facts or stories related to the subtopic to 
   the conversation between questions, to make the discussion fun and interesting, with the goal of 
   enriching the student's knowledge related to the subtopic.
 
