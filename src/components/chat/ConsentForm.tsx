@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useScript } from '@/hooks/use-script';
 import { Logo } from '../Logo';
@@ -16,7 +16,6 @@ type ConsentFormProps = {
 export default function ConsentForm({ onConsent }: ConsentFormProps) {
   const { signOut } = useAuth();
   const scriptStatus = useScript('https://form.jotform.com/jsform/252686065152156');
-  const formRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
@@ -44,11 +43,23 @@ export default function ConsentForm({ onConsent }: ConsentFormProps) {
     };
   }, [onConsent]);
 
-  // This effect is to ensure the form script can find the container div
-  // by waiting a bit after the script has loaded.
   useEffect(() => {
-    if (scriptStatus === 'ready' && formRef.current) {
-        // The script will automatically find the div with the correct class
+    if (scriptStatus === 'ready') {
+      if (typeof JotformFeedback !== 'undefined') {
+        new JotformFeedback({
+          formId: '252686065152156',
+          buttonText: 'Consent Form',
+          base: 'https://form.jotform.com/',
+          background: '#F59202',
+          fontColor: '#FFFFFF',
+          buttonSide: 'bottom',
+          buttonAlign: 'center',
+          type: 'iframe',
+          height: 500,
+          width: 700,
+          isCardForm: false,
+        });
+      }
     }
   }, [scriptStatus]);
 
@@ -74,7 +85,7 @@ export default function ConsentForm({ onConsent }: ConsentFormProps) {
       <CardContent>
         {scriptStatus === 'loading' && <p>Loading consent form...</p>}
         {scriptStatus === 'error' && <p>There was an error loading the consent form. Please try again later.</p>}
-        <div ref={formRef}>
+        <div id="jotform-container-252686065152156">
           {/* The Jotform script will inject the form here. */}
         </div>
       </CardContent>
