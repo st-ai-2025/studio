@@ -1,7 +1,6 @@
 
 "use client";
 
-import { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Logo } from '../Logo';
 import { useAuth } from '@/hooks/use-auth';
