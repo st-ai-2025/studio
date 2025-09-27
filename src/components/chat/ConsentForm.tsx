@@ -6,7 +6,6 @@ import { Logo } from '../Logo';
 import { useAuth } from '@/hooks/use-auth';
 import { Button } from '../ui/button';
 import { LogOut } from 'lucide-react';
-import useScript from '@/hooks/use-script';
 
 type ConsentFormProps = {
   onConsent: () => void;
@@ -14,7 +13,6 @@ type ConsentFormProps = {
 
 export default function ConsentForm({ onConsent }: ConsentFormProps) {
   const { signOut } = useAuth();
-  const status = useScript('https://form.jotform.com/jsform/252686065152156');
 
   return (
     <Card className="w-full max-w-4xl shadow-xl flex flex-col h-[90vh]">
@@ -35,13 +33,16 @@ export default function ConsentForm({ onConsent }: ConsentFormProps) {
           </div>
         </CardHeader>
       <CardContent className="text-center flex-grow flex flex-col p-6">
-        {status === 'loading' && <div className="flex-grow flex items-center justify-center">Loading Consent Form...</div>}
-        {status === 'error' && <div className="flex-grow flex items-center justify-center">Failed to load consent form. Please try again later.</div>}
-        
-        <div className="flex-grow relative border rounded-lg overflow-y-auto w-full">
-            <div id="252686065152156" className="absolute inset-0"></div>
+        <div className="flex-grow relative border rounded-lg overflow-hidden w-full">
+            <iframe
+              id="JotFormIFrame-252686065152156"
+              title="Online AI Tutoring Survey Parental Consent Form"
+              allow="geolocation; microphone; camera; fullscreen; payment"
+              src="https://form.jotform.com/252686065152156"
+              className="h-full w-full border-0"
+            >
+            </iframe>
         </div>
-        
         <Button onClick={onConsent} className="mt-6 w-full max-w-xs mx-auto">Done</Button>
       </CardContent>
     </Card>
