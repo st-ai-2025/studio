@@ -35,16 +35,15 @@ export default function ConsentForm({ onConsent }: ConsentFormProps) {
             </Button>
           </div>
         </CardHeader>
-      <CardContent className="text-center flex-grow flex flex-col">
-        {status === 'loading' && <div>Loading Consent Form...</div>}
-        {status === 'error' && <div>Failed to load consent form. Please try again later.</div>}
+      <CardContent className="text-center flex-grow flex flex-col p-6">
+        {status === 'loading' && <div className="flex-grow flex items-center justify-center">Loading Consent Form...</div>}
+        {status === 'error' && <div className="flex-grow flex items-center justify-center">Failed to load consent form. Please try again later.</div>}
         
-        <div className="flex-grow border rounded-lg overflow-y-auto p-4 w-full h-full">
-            {/* The script will automatically find and replace this div */}
-            <div id="252686065152156"></div>
+        <div className="flex-grow relative border rounded-lg overflow-y-auto w-full">
+            <div id="252686065152156" className="absolute inset-0"></div>
         </div>
         
-        <Button onClick={onConsent} className="mt-6">Done</Button>
+        <Button onClick={onConsent} className="mt-6 w-full max-w-xs mx-auto">Done</Button>
       </CardContent>
     </Card>
   );
