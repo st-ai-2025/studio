@@ -18,7 +18,7 @@ export default function ConsentForm({ onConsent }: ConsentFormProps) {
   const status = useScript('https://form.jotform.com/jsform/252686065152156');
 
   return (
-    <Card className="w-full max-w-4xl shadow-xl">
+    <Card className="w-full max-w-4xl shadow-xl flex flex-col h-[90vh]">
        <CardHeader>
           <div className="flex justify-between items-start">
             <div className="flex-grow text-center">
@@ -35,11 +35,15 @@ export default function ConsentForm({ onConsent }: ConsentFormProps) {
             </Button>
           </div>
         </CardHeader>
-      <CardContent className="text-center">
+      <CardContent className="text-center flex-grow flex flex-col">
         {status === 'loading' && <div>Loading Consent Form...</div>}
         {status === 'error' && <div>Failed to load consent form. Please try again later.</div>}
-        {/* The script will automatically find and replace this div */}
-        <div id="252686065152156"></div>
+        
+        <div className="flex-grow border rounded-lg overflow-y-auto p-4 w-full h-full">
+            {/* The script will automatically find and replace this div */}
+            <div id="252686065152156"></div>
+        </div>
+        
         <Button onClick={onConsent} className="mt-6">Done</Button>
       </CardContent>
     </Card>
