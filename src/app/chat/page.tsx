@@ -23,18 +23,18 @@ export default function ChatPage() {
     }
   }, [user, loading, router]);
   
-  useEffect(() => {
-    const checkConsent = async () => {
-      if (user) {
-        const userDocRef = doc(db, "users", user.uid);
-        const userDoc = await getDoc(userDocRef);
-        if (userDoc.exists() && userDoc.data().consentGiven) {
-          setHasConsented(true);
-        }
-      }
-    };
-    checkConsent();
-  }, [user]);
+  // useEffect(() => {
+  //   const checkConsent = async () => {
+  //     if (user) {
+  //       const userDocRef = doc(db, "users", user.uid);
+  //       const userDoc = await getDoc(userDocRef);
+  //       if (userDoc.exists() && userDoc.data().consentGiven) {
+  //         setHasConsented(true);
+  //       }
+  //     }
+  //   };
+  //   checkConsent();
+  // }, [user]);
 
   const handleConsent = async () => {
     if (user) {
