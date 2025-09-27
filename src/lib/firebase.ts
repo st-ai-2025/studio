@@ -38,4 +38,15 @@ export const createUserProfile = async (user: User) => {
   }
 };
 
+export const updateUserProfile = async (user: User, data: Record<string, any>) => {
+    if (!user) return;
+    const userRef = doc(db, 'users', user.uid);
+    try {
+        await setDoc(userRef, data, { merge: true });
+    } catch (error) {
+        console.error("Error updating user profile:", error);
+        throw error;
+    }
+}
+
 export { app, auth, db, googleProvider };

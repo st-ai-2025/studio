@@ -8,8 +8,8 @@ import ConsentForm from "@/components/chat/ConsentForm";
 import SurveyForm from "@/components/chat/SurveyForm";
 import ChatInterface from "@/components/chat/ChatInterface";
 import { Logo } from "@/components/Logo";
-
-const CONSENT_STORAGE_KEY = 'formflow-ai-chat-consent-given';
+import { doc, getDoc } from "firebase/firestore";
+import { db, updateUserProfile } from "@/lib/firebase";
 
 export default function ChatPage() {
   const [hasConsented, setHasConsented] = useState(false);
@@ -24,14 +24,22 @@ export default function ChatPage() {
   }, [user, loading, router]);
   
   useEffect(() => {
-    const consentGiven = localStorage.getItem(CONSENT_STORAGE_KEY);
-    if (consentGiven === 'true') {
-      setHasConsented(true);
-    }
-  }, []);
+    const checkConsent = async () => {
+      if (user) {
+        const userDocRef = doc(db, "users", user.uid);
+        const userDoc = await getDoc(userDocRef);
+        if (userDoc.exists() && userDoc.data().consentGiven) {
+          setHasConsented(true);
+        }
+      }
+    };
+    checkConsent();
+  }, [user]);
 
-  const handleConsent = () => {
-    localStorage.setItem(CONSENT_STORAGE_KEY, 'true');
+  const handleConsent = async () => {
+    if (user) {
+      await updateUserProfile(user, { consentGiven: true });
+    }
     setHasConsented(true);
   };
 
@@ -41,8 +49,6 @@ export default function ChatPage() {
   
   const handleResetSurvey = () => {
     setSurveyData(null);
-    localStorage.removeItem(CONSENT_STORAGE_KEY);
-    setHasConsented(false);
   }
 
   if (loading || !user) {
