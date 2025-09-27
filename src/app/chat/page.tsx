@@ -9,6 +9,8 @@ import SurveyForm from "@/components/chat/SurveyForm";
 import ChatInterface from "@/components/chat/ChatInterface";
 import { Logo } from "@/components/Logo";
 
+const CONSENT_STORAGE_KEY = 'formflow-ai-chat-consent-given';
+
 export default function ChatPage() {
   const [hasConsented, setHasConsented] = useState(false);
   const [surveyData, setSurveyData] = useState<Record<string, any> | null>(null);
@@ -20,8 +22,16 @@ export default function ChatPage() {
       router.replace("/login");
     }
   }, [user, loading, router]);
+  
+  useEffect(() => {
+    const consentGiven = localStorage.getItem(CONSENT_STORAGE_KEY);
+    if (consentGiven === 'true') {
+      setHasConsented(true);
+    }
+  }, []);
 
   const handleConsent = () => {
+    localStorage.setItem(CONSENT_STORAGE_KEY, 'true');
     setHasConsented(true);
   };
 
@@ -31,6 +41,7 @@ export default function ChatPage() {
   
   const handleResetSurvey = () => {
     setSurveyData(null);
+    localStorage.removeItem(CONSENT_STORAGE_KEY);
     setHasConsented(false);
   }
 

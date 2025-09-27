@@ -159,8 +159,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
       });
       
       if (res.chatbotResponse) {
-        const escapedResponse = res.chatbotResponse.replace(/\\/g, '\\\\');
-        const trimmedResponse = escapedResponse.trim();
+        const trimmedResponse = res.chatbotResponse.trim();
         
         if (
           trimmedResponse.includes(

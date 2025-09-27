@@ -45,7 +45,7 @@ export default function ConsentForm({ onConsent }: ConsentFormProps) {
               </div>
               <CardTitle className="text-2xl font-headline">Consent to Participate</CardTitle>
               <CardDescription className="pt-2">
-                Please ask your parent/guardian to sign the consent form below before proceeding.
+                Please sign the consent form below. Once finish, please close the pop-up window to proceed.
               </CardDescription>
             </div>
             <Button variant="ghost" size="icon" onClick={signOut} aria-label="Sign out">
