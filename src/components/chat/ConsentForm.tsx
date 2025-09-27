@@ -1,12 +1,13 @@
 
 "use client";
 
-import { useRef } from 'react';
+import { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Logo } from '../Logo';
 import { useAuth } from '@/hooks/use-auth';
 import { Button } from '../ui/button';
 import { LogOut } from 'lucide-react';
+import useScript from '@/hooks/use-script';
 
 type ConsentFormProps = {
   onConsent: () => void;
@@ -14,29 +15,10 @@ type ConsentFormProps = {
 
 export default function ConsentForm({ onConsent }: ConsentFormProps) {
   const { signOut } = useAuth();
-  const popupIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  
-  const openConsentForm = () => {
-    const popup = window.open(
-      'https://form.jotform.com/252686065152156',
-      'blank',
-      'scrollbars=yes,toolbar=no,width=700,height=500'
-    );
-
-    if (popup) {
-      popupIntervalRef.current = setInterval(() => {
-        if (popup.closed) {
-          if(popupIntervalRef.current) {
-            clearInterval(popupIntervalRef.current);
-          }
-          onConsent();
-        }
-      }, 500); // Check every 500ms
-    }
-  };
+  const status = useScript('https://form.jotform.com/jsform/252686065152156');
 
   return (
-    <Card className="w-full max-w-2xl shadow-xl">
+    <Card className="w-full max-w-4xl shadow-xl">
        <CardHeader>
           <div className="flex justify-between items-start">
             <div className="flex-grow text-center">
@@ -45,7 +27,7 @@ export default function ConsentForm({ onConsent }: ConsentFormProps) {
               </div>
               <CardTitle className="text-2xl font-headline">Consent to Participate</CardTitle>
               <CardDescription className="pt-2">
-                Please sign the consent form below. Once finish, please close the pop-up window to proceed.
+                Please review and complete the consent form below. Click "Done" when you have finished.
               </CardDescription>
             </div>
             <Button variant="ghost" size="icon" onClick={signOut} aria-label="Sign out">
@@ -54,7 +36,11 @@ export default function ConsentForm({ onConsent }: ConsentFormProps) {
           </div>
         </CardHeader>
       <CardContent className="text-center">
-        <Button onClick={openConsentForm}>Open Consent Form</Button>
+        {status === 'loading' && <div>Loading Consent Form...</div>}
+        {status === 'error' && <div>Failed to load consent form. Please try again later.</div>}
+        {/* The script will automatically find and replace this div */}
+        <div id="252686065152156"></div>
+        <Button onClick={onConsent} className="mt-6">Done</Button>
       </CardContent>
     </Card>
   );
