@@ -278,7 +278,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
         </div>
         <div className="flex justify-center">
             {showPostSurveyButton ? (
-                 <Button variant="outline" onClick={handleTakeSurvey}>Take Survey</Button>
+                 <Button onClick={handleTakeSurvey} className="bg-accent text-accent-foreground hover:bg-accent/90">Take Survey</Button>
             ) : (
                 <AlertDialog>
                 <AlertDialogTrigger asChild>
