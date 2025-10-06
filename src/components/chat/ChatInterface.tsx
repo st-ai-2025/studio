@@ -282,7 +282,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
             ) : (
                 <AlertDialog>
                 <AlertDialogTrigger asChild>
-                    <Button variant="destructive" className="bg-red-500 hover:bg-red-600 text-white">End Session</Button>
+                    <Button variant="destructive" className="bg-red-400 hover:bg-red-500 text-white">End Session</Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
@@ -307,5 +307,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
     </div>
   );
 }
+
+    
 
     
