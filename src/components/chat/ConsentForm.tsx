@@ -9,9 +9,10 @@ import { LogOut } from 'lucide-react';
 
 type ConsentFormProps = {
   onConsent: () => void;
+  hasAlreadyConsented: boolean;
 };
 
-export default function ConsentForm({ onConsent }: ConsentFormProps) {
+export default function ConsentForm({ onConsent, hasAlreadyConsented }: ConsentFormProps) {
   const { signOut } = useAuth();
 
   return (
@@ -43,7 +44,12 @@ export default function ConsentForm({ onConsent }: ConsentFormProps) {
             >
             </iframe>
         </div>
-        <Button onClick={onConsent} className="mt-6 w-full max-w-xs mx-auto">Done</Button>
+        <div className="mt-6 flex justify-center gap-4">
+            <Button onClick={onConsent} className="w-full max-w-xs mx-auto">Done</Button>
+            {hasAlreadyConsented && (
+                <Button onClick={onConsent} variant="secondary" className="w-full max-w-xs mx-auto">Already submitted</Button>
+            )}
+        </div>
       </CardContent>
     </Card>
   );

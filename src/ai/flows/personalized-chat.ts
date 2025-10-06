@@ -75,7 +75,8 @@ const prompt = ai.definePrompt({
       "D": "answer D"
     }
   }
-    
+  ## Important: Always start qa_block with a new line.  
+
   # Formatting mathematical expressions
   The message output may include mathmatical expressions. For all inline mathematical expressions, 
   you must enclose them using the unique delimiters <math> and </math>, which should always come in pairs. 

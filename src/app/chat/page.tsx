@@ -13,6 +13,7 @@ import { db, updateUserProfile } from "@/lib/firebase";
 
 export default function ChatPage() {
   const [hasConsented, setHasConsented] = useState(false);
+  const [userHasAlreadyConsented, setUserHasAlreadyConsented] = useState(false);
   const [surveyData, setSurveyData] = useState<Record<string, any> | null>(null);
   const { user, loading } = useAuth();
   const router = useRouter();
@@ -29,7 +30,7 @@ export default function ChatPage() {
         const userDocRef = doc(db, "users", user.uid);
         const userDoc = await getDoc(userDocRef);
         if (userDoc.exists() && userDoc.data().consentGiven) {
-          setHasConsented(true);
+          setUserHasAlreadyConsented(true);
         }
       }
     };
@@ -37,7 +38,7 @@ export default function ChatPage() {
   }, [user]);
 
   const handleConsent = async () => {
-    if (user) {
+    if (user && !userHasAlreadyConsented) {
       await updateUserProfile(user, { consentGiven: true });
     }
     setHasConsented(true);
@@ -62,7 +63,7 @@ export default function ChatPage() {
   return (
     <div className="h-screen bg-background flex items-start justify-center pt-12">
       {!hasConsented ? (
-        <ConsentForm onConsent={handleConsent} />
+        <ConsentForm onConsent={handleConsent} hasAlreadyConsented={userHasAlreadyConsented} />
       ) : !surveyData ? (
         <SurveyForm onSubmit={handleSurveySubmit} />
       ) : (
