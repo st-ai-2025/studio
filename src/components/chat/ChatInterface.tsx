@@ -43,7 +43,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
   const { user, signOut } = useAuth();
   const { toast } = useToast();
   const router = useRouter();
-  const [messages, setMessages] = useState<Omit<Message, 'id' | 'timestamp'>[]>([]);
+  const [messages, setMessages] = useState<Omit<Message, 'id' | 'timestamp'>>([]);
   const [input, setInput] = useState("");
   const [isResponding, setIsResponding] = useState(false);
   const [isFirstMessage, setIsFirstMessage] = useState(true);
@@ -282,7 +282,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
             ) : (
                 <AlertDialog>
                 <AlertDialogTrigger asChild>
-                    <Button variant="outline">End Session</Button>
+                    <Button variant="destructive" className="bg-red-500 hover:bg-red-600 text-white">End Session</Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
@@ -307,3 +307,5 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
     </div>
   );
 }
+
+    
