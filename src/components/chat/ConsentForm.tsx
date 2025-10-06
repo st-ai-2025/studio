@@ -25,7 +25,9 @@ export default function ConsentForm({ onConsent, hasAlreadyConsented }: ConsentF
               </div>
               <CardTitle className="text-2xl font-headline">Consent to Participate</CardTitle>
               <CardDescription className="pt-2">
-                Please scroll to review and sign the consent form below. Click "Done" after have submitted the form. If you signed the form previously, click 'Already submitted' to skip this step.
+                <span className="font-bold text-primary">Please scroll to review and sign the consent form below.</span>
+                <br />
+                Click 'Done' after you submitted the form. If you have submitted a form previously, click 'Already submitted' to proceed.
               </CardDescription>
             </div>
             <Button variant="ghost" size="icon" onClick={signOut} aria-label="Sign out">
