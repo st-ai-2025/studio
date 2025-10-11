@@ -100,7 +100,9 @@ const renderQaBlock = (text: string) => {
 
     const jsonString = text.substring(jsonStartIndex, jsonEndIndex);
     try {
-      const qaData = JSON.parse(jsonString);
+      // Sanitize the string to escape single backslashes before parsing
+      const sanitizedJsonString = jsonString.replace(/\\(?!["\\/bfnrt]|u[0-9a-fA-F]{4})/g, '\\\\');
+      const qaData = JSON.parse(sanitizedJsonString);
       elements.push(
         <div key={`qa-${lastIndex}`} className="space-y-2 my-4">
           <div>
