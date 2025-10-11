@@ -53,42 +53,72 @@ const renderWithLatex = (text: string) => {
   }).filter(Boolean);
 };
 
-const renderQaBlock = (text: string) => {
-  const qaRegex = /(qa_block:({[\s\S]*?}))/g;
-  const parts = text.split(qaRegex);
-  const elements: React.ReactNode[] = [];
+const findJsonEnd = (text: string, startIndex: number) => {
+  let openBraces = 0;
+  for (let i = startIndex; i < text.length; i++) {
+    if (text[i] === '{') {
+      openBraces++;
+    } else if (text[i] === '}') {
+      openBraces--;
+    }
+    if (openBraces === 0) {
+      return i + 1;
+    }
+  }
+  return -1; // Not found
+};
 
-  for (let i = 0; i < parts.length; i++) {
-    if (i % 2 === 0) {
-      // This is the text part (or an undefined part from capturing)
-      if (parts[i]) {
-        elements.push(renderWithLatex(parts[i]));
-      }
-    } else if (i % 2 === 1 && parts[i].startsWith('qa_block:')) {
-      // This is the full qa_block part
-      const jsonString = parts[i].substring('qa_block:'.length);
-      if (jsonString) {
-        try {
-          const cleanedJsonString = jsonString.replace(/\n/g, ' ').replace(/\s+/g, ' ');
-          const qaData = JSON.parse(cleanedJsonString);
-          
-          elements.push(
-            <div key={`qa-${i}`} className="space-y-2 my-4">
-              <div>
-                <span className="font-semibold">Question: </span>
-                {renderWithLatex(qaData.question)}
-              </div>
-              {Object.entries(qaData.answers).map(([key, value]) => (
-                <div key={key}>{renderWithLatex(`${key}: ${value}`)}</div>
-              ))}
-            </div>
-          );
-        } catch (error) {
-          console.error("Error parsing qa_block:", error, "original text:", parts[i]);
-          elements.push(renderWithLatex(parts[i]));
-        }
-      }
-      i++; // Also skip the next captured group which is just the JSON part
+const renderQaBlock = (text: string) => {
+  const elements: React.ReactNode[] = [];
+  let lastIndex = 0;
+
+  while (lastIndex < text.length) {
+    const qaBlockStartIndex = text.indexOf('qa_block:', lastIndex);
+    if (qaBlockStartIndex === -1) {
+      elements.push(renderWithLatex(text.substring(lastIndex)));
+      break;
+    }
+
+    // Add the text before the qa_block
+    if (qaBlockStartIndex > lastIndex) {
+      elements.push(renderWithLatex(text.substring(lastIndex, qaBlockStartIndex)));
+    }
+
+    const jsonStartIndex = text.indexOf('{', qaBlockStartIndex);
+    if (jsonStartIndex === -1) {
+      // No JSON object found, treat the rest as regular text
+      elements.push(renderWithLatex(text.substring(qaBlockStartIndex)));
+      break;
+    }
+
+    const jsonEndIndex = findJsonEnd(text, jsonStartIndex);
+    if (jsonEndIndex === -1) {
+      // Incomplete JSON, treat as regular text
+      elements.push(renderWithLatex(text.substring(qaBlockStartIndex)));
+      break;
+    }
+
+    const jsonString = text.substring(jsonStartIndex, jsonEndIndex);
+    try {
+      const qaData = JSON.parse(jsonString);
+      elements.push(
+        <div key={`qa-${lastIndex}`} className="space-y-2 my-4">
+          <div>
+            <span className="font-semibold">Question: </span>
+            {renderWithLatex(qaData.question)}
+          </div>
+          {Object.entries(qaData.answers).map(([key, value]) => (
+            <div key={key}>{renderWithLatex(`${key}: ${value}`)}</div>
+          ))}
+        </div>
+      );
+      lastIndex = jsonEndIndex;
+    } catch (error) {
+      // Parsing failed, treat the problematic part as regular text
+      const problematicText = text.substring(qaBlockStartIndex, jsonEndIndex);
+      console.error("Error parsing qa_block:", error, "original text:", problematicText);
+      elements.push(renderWithLatex(problematicText));
+      lastIndex = jsonEndIndex;
     }
   }
 
