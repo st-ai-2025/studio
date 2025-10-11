@@ -54,19 +54,19 @@ const renderWithLatex = (text: string) => {
 };
 
 const renderQaBlock = (text: string) => {
-  const qaRegex = /qa_block:({[\s\S]*?}(?=\s*\n\s*\n|\s*$|qa_block:))/g;
+  const qaRegex = /(qa_block:({[\s\S]*?}))/g;
   const parts = text.split(qaRegex);
   const elements: React.ReactNode[] = [];
 
   for (let i = 0; i < parts.length; i++) {
     if (i % 2 === 0) {
-      // This is the text part
+      // This is the text part (or an undefined part from capturing)
       if (parts[i]) {
         elements.push(renderWithLatex(parts[i]));
       }
-    } else {
-      // This is the qa_block json part
-      const jsonString = parts[i];
+    } else if (i % 2 === 1 && parts[i].startsWith('qa_block:')) {
+      // This is the full qa_block part
+      const jsonString = parts[i].substring('qa_block:'.length);
       if (jsonString) {
         try {
           const cleanedJsonString = jsonString.replace(/\n/g, ' ').replace(/\s+/g, ' ');
@@ -84,15 +84,17 @@ const renderQaBlock = (text: string) => {
             </div>
           );
         } catch (error) {
-          console.error("Error parsing qa_block:", error, "original text:", `qa_block:${jsonString}`);
-          elements.push(renderWithLatex(`qa_block:${jsonString}`));
+          console.error("Error parsing qa_block:", error, "original text:", parts[i]);
+          elements.push(renderWithLatex(parts[i]));
         }
       }
+      i++; // Also skip the next captured group which is just the JSON part
     }
   }
 
   return elements;
 };
+
 
 const FormattedMessage = ({ content }: FormattedMessageProps) => {
   const paragraphs = content.split('\n\n').map((paragraph, i) => (

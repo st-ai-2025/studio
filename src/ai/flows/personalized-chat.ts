@@ -88,8 +88,8 @@ const prompt = ai.definePrompt({
   All backslashes in LaTeX commands must be escaped by using two backslashes (\\), e.g. \\frac, \\times, \\sqrt. 
   However, do not use two backslashes for special characters that are not in mathematical expressions, e.g. '\n', '\t'.
   Do not use dollar signs ($) for any LaTeX expressions. For example, an inline expression of multiplication
-  would be like this: <math>3 \\times 1.50 + 2 \\times 2.25 = 4.50 + 4.50</math>; a block-level equation for 
-  the quadratic formula would look like this: <blockmath>x = \\frac{-b \\pm \\sqrt{b^2-4ac}}{2a}</blockmath>. 
+  would be like this: <math>3\\times1.50+2\\times2.25=4.50+4.50</math>; a block-level equation for 
+  the quadratic formula would look like this: <blockmath>x=\\frac{-b\\pm\\sqrt{b^2-4ac}}{2a}</blockmath>. 
   Never generate Latex expressions outside of the <math></math> and <blockmath></blockmath> delimiters.
 
   Any dollar signs appearing in the normal text should be treated as regular characters and not as delimiters.
