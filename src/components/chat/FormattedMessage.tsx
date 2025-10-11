@@ -31,26 +31,7 @@ const renderWithLatex = (text: string) => {
   if (!text) {
     return null;
   }
-  
-  // Regex to split by <math>...</math> and <blockmath>...</blockmath>
-  const parts = text.split(/(<\/?(?:math|blockmath)>)/);
-
-  return parts.map((part, i) => {
-    if (part === '<math>') {
-      const latexContent = parts[i + 1] || '';
-      return <Latex key={i}>{`$${latexContent.replace(/\\\\/g, '\\')}$`}</Latex>;
-    }
-    if (part === '<blockmath>') {
-      const latexContent = parts[i + 1] || '';
-      return <Latex key={i}>{`$$${latexContent.replace(/\\\\/g, '\\')}$$`}</Latex>;
-    }
-    // Filter out the closing tags and the content that has been processed
-    if (part === '</math>' || part === '</blockmath>' || parts[i-1] === '<math>' || parts[i-1] === '<blockmath>') {
-      return null;
-    }
-    // For regular text parts, apply bold/italic formatting
-    return applyFormatting(part);
-  }).filter(Boolean);
+  return <Latex>{text}</Latex>;
 };
 
 const findJsonEnd = (text: string, startIndex: number) => {
@@ -85,41 +66,47 @@ const findJsonEnd = (text: string, startIndex: number) => {
   return -1; // Not found
 };
 
-const renderQaBlock = (text: string) => {
+const renderQaBlock = (rawText: string) => {
   const elements: React.ReactNode[] = [];
   let lastIndex = 0;
+
+  // Pre-process the entire text to replace custom math tags with standard delimiters.
+  // This avoids JSON parsing errors with backslashes in LaTeX.
+  const text = rawText
+    .replace(/<blockmath>/g, '$$')
+    .replace(/<\/blockmath>/g, '$$')
+    .replace(/<math>/g, '$')
+    .replace(/<\/math>/g, '$')
+    .replace(/\\\\/g, '\\');
+
 
   while (lastIndex < text.length) {
     const qaBlockStartIndex = text.indexOf('qa_block:', lastIndex);
     if (qaBlockStartIndex === -1) {
-      elements.push(renderWithLatex(text.substring(lastIndex)));
+      elements.push(applyFormatting(text.substring(lastIndex)));
       break;
     }
 
     // Add the text before the qa_block
     if (qaBlockStartIndex > lastIndex) {
-      elements.push(renderWithLatex(text.substring(lastIndex, qaBlockStartIndex)));
+      elements.push(applyFormatting(text.substring(lastIndex, qaBlockStartIndex)));
     }
 
     const jsonStartIndex = text.indexOf('{', qaBlockStartIndex);
     if (jsonStartIndex === -1) {
-      // No JSON object found, treat the rest as regular text
-      elements.push(renderWithLatex(text.substring(qaBlockStartIndex)));
+      elements.push(applyFormatting(text.substring(qaBlockStartIndex)));
       break;
     }
 
     const jsonEndIndex = findJsonEnd(text, jsonStartIndex);
     if (jsonEndIndex === -1) {
-      // Incomplete JSON, treat as regular text
-      elements.push(renderWithLatex(text.substring(qaBlockStartIndex)));
+      elements.push(applyFormatting(text.substring(qaBlockStartIndex)));
       break;
     }
 
     const jsonString = text.substring(jsonStartIndex, jsonEndIndex);
     try {
-      // Sanitize the string to escape single backslashes before parsing
-      const sanitizedJsonString = jsonString.replace(/\\(?!["\\/bfnrt]|u[0-9a-fA-F]{4})/g, '\\\\');
-      const qaData = JSON.parse(sanitizedJsonString);
+      const qaData = JSON.parse(jsonString);
       elements.push(
         <div key={`qa-${lastIndex}`} className="space-y-2 my-4">
           <div>
@@ -133,10 +120,9 @@ const renderQaBlock = (text: string) => {
       );
       lastIndex = jsonEndIndex;
     } catch (error) {
-      // Parsing failed, treat the problematic part as regular text
       const problematicText = text.substring(qaBlockStartIndex, jsonEndIndex);
       console.error("Error parsing qa_block:", error, "original text:", problematicText);
-      elements.push(renderWithLatex(problematicText));
+      elements.push(applyFormatting(problematicText));
       lastIndex = jsonEndIndex;
     }
   }
