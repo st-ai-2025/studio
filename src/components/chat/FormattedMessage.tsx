@@ -76,10 +76,10 @@ const findJsonEnd = (text: string, startIndex: number) => {
         openBraces++;
       } else if (char === '}') {
         openBraces--;
+        if (openBraces === 0) {
+          return i + 1;
+        }
       }
-    }
-    if (openBraces === 0) {
-      return i + 1;
     }
   }
   return -1; // Not found
