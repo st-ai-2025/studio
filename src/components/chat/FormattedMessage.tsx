@@ -70,8 +70,6 @@ const renderQaBlock = (rawText: string) => {
   const elements: React.ReactNode[] = [];
   let lastIndex = 0;
 
-  // Pre-process the entire text to replace custom math tags with standard delimiters.
-  // This avoids JSON parsing errors with backslashes in LaTeX.
   const text = rawText
     .replace(/<blockmath>/g, '$$')
     .replace(/<\/blockmath>/g, '$$')
@@ -82,30 +80,34 @@ const renderQaBlock = (rawText: string) => {
   while (lastIndex < text.length) {
     const qaBlockStartIndex = text.indexOf('qa_block:', lastIndex);
     if (qaBlockStartIndex === -1) {
-      elements.push(applyFormatting(text.substring(lastIndex)));
+      const remainingText = text.substring(lastIndex);
+      if (remainingText) {
+        elements.push(<React.Fragment key={`text-${lastIndex}`}>{renderWithLatex(remainingText)}</React.Fragment>);
+      }
       break;
     }
 
-    // Add the text before the qa_block
-    if (qaBlockStartIndex > lastIndex) {
-      elements.push(applyFormatting(text.substring(lastIndex, qaBlockStartIndex)));
+    const textBefore = text.substring(lastIndex, qaBlockStartIndex);
+    if (textBefore) {
+      elements.push(<React.Fragment key={`text-${lastIndex}`}>{renderWithLatex(textBefore)}</React.Fragment>);
     }
 
     const jsonStartIndex = text.indexOf('{', qaBlockStartIndex);
     if (jsonStartIndex === -1) {
-      elements.push(applyFormatting(text.substring(qaBlockStartIndex)));
+      const remainingText = text.substring(qaBlockStartIndex);
+      elements.push(<React.Fragment key={`text-${qaBlockStartIndex}`}>{renderWithLatex(remainingText)}</React.Fragment>);
       break;
     }
 
     const jsonEndIndex = findJsonEnd(text, jsonStartIndex);
     if (jsonEndIndex === -1) {
-      elements.push(applyFormatting(text.substring(qaBlockStartIndex)));
+      const remainingText = text.substring(qaBlockStartIndex);
+      elements.push(<React.Fragment key={`text-err-${qaBlockStartIndex}`}>{renderWithLatex(remainingText)}</React.Fragment>);
       break;
     }
 
     const jsonString = text.substring(jsonStartIndex, jsonEndIndex);
     try {
-      // THIS IS THE FIX: Escape backslashes before parsing JSON.
       const sanitizedJsonString = jsonString.replace(/\\/g, '\\\\');
       const qaData = JSON.parse(sanitizedJsonString);
       elements.push(
@@ -123,7 +125,7 @@ const renderQaBlock = (rawText: string) => {
     } catch (error) {
       const problematicText = text.substring(qaBlockStartIndex, jsonEndIndex);
       console.error("Error parsing qa_block:", error, "original text:", problematicText);
-      elements.push(applyFormatting(problematicText));
+      elements.push(<React.Fragment key={`text-err-parse-${qaBlockStartIndex}`}>{renderWithLatex(problematicText)}</React.Fragment>);
       lastIndex = jsonEndIndex;
     }
   }
