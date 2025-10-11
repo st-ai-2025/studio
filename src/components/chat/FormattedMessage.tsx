@@ -77,7 +77,6 @@ const renderQaBlock = (rawText: string) => {
     .replace(/<\/blockmath>/g, '$$')
     .replace(/<math>/g, '$')
     .replace(/<\/math>/g, '$')
-    .replace(/\\\\/g, '\\');
 
 
   while (lastIndex < text.length) {
@@ -106,7 +105,9 @@ const renderQaBlock = (rawText: string) => {
 
     const jsonString = text.substring(jsonStartIndex, jsonEndIndex);
     try {
-      const qaData = JSON.parse(jsonString);
+      // THIS IS THE FIX: Escape backslashes before parsing JSON.
+      const sanitizedJsonString = jsonString.replace(/\\/g, '\\\\');
+      const qaData = JSON.parse(sanitizedJsonString);
       elements.push(
         <div key={`qa-${lastIndex}`} className="space-y-2 my-4">
           <div>
