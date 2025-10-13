@@ -33,7 +33,18 @@ const renderWithLatex = (text: string) => {
   if (!text) {
     return null;
   }
-  return <Latex>{text}</Latex>;
+  const formattedNodes = applyFormatting(text);
+  const latexElements = formattedNodes.map((node, index) => {
+      if (typeof node === 'string') {
+          return <Latex key={index}>{node}</Latex>;
+      }
+      if(React.isValidElement(node) && typeof node.props.children === 'string') {
+          return React.cloneElement(node, { ...node.props, key: index, children: <Latex>{node.props.children}</Latex> });
+      }
+      return node;
+  });
+
+  return <>{latexElements}</>;
 };
 
 const findJsonEnd = (text: string, startIndex: number) => {
