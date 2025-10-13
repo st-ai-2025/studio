@@ -32,7 +32,7 @@ export default function ChatMessage({ message }: ChatMessageProps) {
         isUser ? "bg-primary text-primary-foreground" : "bg-card shadow-sm"
       )}>
         <CardContent className="p-3 message-content">
-          <FormattedMessage content={message.content} />
+          <FormattedMessage content={message.content} isUser={isUser} />
         </CardContent>
       </Card>
       {isUser && (

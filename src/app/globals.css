@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -100,4 +101,8 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+.font-bold.text-blue-600 {
+  color: #2563eb; /* Or your desired blue color */
 }

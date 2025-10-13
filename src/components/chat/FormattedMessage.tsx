@@ -6,6 +6,7 @@ import Latex from 'react-latex-next';
 
 type FormattedMessageProps = {
   content: string;
+  isUser: boolean;
 };
 
 const applyFormatting = (text: string): React.ReactNode[] => {
@@ -18,7 +19,8 @@ const applyFormatting = (text: string): React.ReactNode[] => {
             if (content === '[Before you exit, please take the survey by clicking the button below.]') {
               return <strong key={i} className="text-destructive">{content}</strong>
             }
-            return <strong key={i}>{content}</strong>;
+            // Add a specific class for bolded text
+            return <strong key={i} className="font-bold text-blue-600">{content}</strong>;
         }
         if (part.startsWith('*') && part.endsWith('*')) {
             return <em key={i}>{part.slice(1, -1)}</em>;
@@ -51,7 +53,12 @@ const findJsonEnd = (text: string, startIndex: number) => {
     const char = text[i];
     if (char === '"' && (i === 0 || text[i - 1] !== '\\')) {
       inString = !inString;
+    } else if (char === '\\' && i + 1 < text.length) {
+      // Skip the escaped character
+      i++;
+      continue;
     }
+
     if (!inString) {
       if (char === '{') {
         openBraces++;
@@ -66,7 +73,7 @@ const findJsonEnd = (text: string, startIndex: number) => {
   return -1; // Not found
 };
 
-const renderQaBlock = (rawText: string) => {
+const renderQaBlock = (rawText: string, isUser: boolean) => {
   const elements: React.ReactNode[] = [];
   let lastIndex = 0;
 
@@ -74,8 +81,7 @@ const renderQaBlock = (rawText: string) => {
     .replace(/<blockmath>/g, '$$')
     .replace(/<\/blockmath>/g, '$$')
     .replace(/<math>/g, '$')
-    .replace(/<\/math>/g, '$')
-
+    .replace(/<\/math>/g, '$');
 
   while (lastIndex < text.length) {
     const qaBlockStartIndex = text.indexOf('qa_block:', lastIndex);
@@ -108,16 +114,22 @@ const renderQaBlock = (rawText: string) => {
 
     const jsonString = text.substring(jsonStartIndex, jsonEndIndex);
     try {
-      const sanitizedJsonString = jsonString.replace(/\\/g, '\\\\');
+      const sanitizedJsonString = jsonString.replace(/\\([^\\])/g, '\\\\$1');
       const qaData = JSON.parse(sanitizedJsonString);
+      
+      const questionText = qaData.question;
+      const answerEntries = Object.entries(qaData.answers).map(([key, value]) => {
+        return [key, value as string] as [string, string];
+      });
+
       elements.push(
         <div key={`qa-${lastIndex}`} className="space-y-2 my-4">
           <div>
             <strong>Question: </strong>
-            {renderWithLatex(qaData.question)}
+            {renderWithLatex(questionText)}
           </div>
-          {Object.entries(qaData.answers).map(([key, value]) => (
-            <div key={key}><strong>{key}: </strong>{renderWithLatex(value as string)}</div>
+          {answerEntries.map(([key, value]) => (
+            <div key={key}><strong>{key}: </strong>{renderWithLatex(value)}</div>
           ))}
         </div>
       );
@@ -134,10 +146,12 @@ const renderQaBlock = (rawText: string) => {
 };
 
 
-const FormattedMessage = ({ content }: FormattedMessageProps) => {
-  const paragraphs = content.split('\n\n').map((paragraph, i) => (
+const FormattedMessage = ({ content, isUser }: FormattedMessageProps) => {
+  const processedContent = isUser ? content : content.replace(/\$/g, 'USD');
+
+  const paragraphs = processedContent.split('\n\n').map((paragraph, i) => (
     <div key={i} className="my-1">
-      {renderQaBlock(paragraph)}
+      {renderQaBlock(paragraph, isUser)}
     </div>
   ));
   
