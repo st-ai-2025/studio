@@ -75,10 +75,10 @@ const prompt = ai.definePrompt({
       "D": "answer D"
     }
   }
-  ## Important: Always start qa_block with a new line.  
+  ## Critical: Always start qa_block with a new line.  
 
   # Formatting mathematical expressions
-  The message output may include mathmatical expressions. For all inline mathematical expressions, 
+  The message output may include Latex mathmatical expressions. For all inline mathematical expressions, 
   you must enclose them using the unique delimiters <math> and </math>, which should always come in pairs. 
   For all block-level equations, you must enclose them using the unique delimiters <blockmath> and </blockmath>, 
   which should always come in pairs. 
@@ -93,6 +93,8 @@ const prompt = ai.definePrompt({
   Never generate Latex expressions outside of the <math></math> and <blockmath></blockmath> delimiters.
 
   Any dollar signs appearing in the normal text should be treated as regular characters and not as delimiters.
+
+  ## Critical: Never use Latex expression for non-mathematic text.
 
   # Ending tutoring session
   During any point of the conversation, if the student states 'I am done', it indicates that they 
