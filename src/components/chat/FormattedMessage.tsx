@@ -10,41 +10,49 @@ type FormattedMessageProps = {
 };
 
 const applyFormatting = (text: string): React.ReactNode[] => {
-    // Split by bold and italic markers, keeping the delimiters
-    const parts = text.split(/(\*\*.*?\*\*)|(\*.*?\*)/g).filter(Boolean);
+    const mathPlaceholder = '___MATH_PLACEHOLDER___';
+    const mathBlocks: string[] = [];
 
+    // First, isolate math blocks
+    const textWithoutMath = text.replace(/(<blockmath>[\s\S]*?<\/blockmath>|<math>[\s\S]*?<\/math>)/g, (match) => {
+        mathBlocks.push(match);
+        return mathPlaceholder;
+    });
+
+    // Split by bold and italic markers, keeping the delimiters
+    const parts = textWithoutMath.split(/(\*\*.*?\*\*)|(\*.*?\*)/g).filter(Boolean);
+
+    let mathBlockIndex = 0;
     return parts.map((part, i) => {
+        if (part === mathPlaceholder) {
+            return mathBlocks[mathBlockIndex++];
+        }
         if (part.startsWith('**') && part.endsWith('**')) {
             const content = part.slice(2, -2);
             if (content === '[Before you exit, please take the survey by clicking the button below.]') {
               return <strong key={i} className="text-destructive">{content}</strong>
             }
-            // Add a specific class for bolded text
             return <strong key={i} className="font-bold text-blue-600">{content}</strong>;
         }
         if (part.startsWith('*') && part.endsWith('*')) {
             return <em key={i}>{part.slice(1, -1)}</em>;
         }
-        return <span key={i}>{part}</span>;
+        return part;
     });
 };
 
-const renderWithLatex = (text: string) => {
-  if (!text) {
-    return null;
+const renderWithLatex = (node: React.ReactNode, key: string | number) => {
+  if (typeof node !== 'string') {
+    return React.cloneElement(node as React.ReactElement, { key });
   }
-  const formattedNodes = applyFormatting(text);
-  const latexElements = formattedNodes.map((node, index) => {
-      if (typeof node === 'string') {
-          return <Latex key={index}>{node}</Latex>;
-      }
-      if(React.isValidElement(node) && typeof node.props.children === 'string') {
-          return React.cloneElement(node, { ...node.props, key: index, children: <Latex>{node.props.children}</Latex> });
-      }
-      return node;
-  });
 
-  return <>{latexElements}</>;
+  const textWithDelimiters = node
+    .replace(/<blockmath>/g, '$$')
+    .replace(/<\/blockmath>/g, '$$')
+    .replace(/<math>/g, '$')
+    .replace(/<\/math>/g, '$');
+  
+  return <Latex key={key}>{textWithDelimiters}</Latex>;
 };
 
 const findJsonEnd = (text: string, startIndex: number) => {
@@ -88,77 +96,76 @@ const renderQaBlock = (rawText: string, isUser: boolean) => {
   const elements: React.ReactNode[] = [];
   let lastIndex = 0;
 
-  const text = rawText
-    .replace(/<blockmath>/g, '$$')
-    .replace(/<\/blockmath>/g, '$$')
-    .replace(/<math>/g, '$')
-    .replace(/<\/math>/g, '$');
+  const regex = /(qa_block:)/;
+  const parts = rawText.split(regex);
 
-  while (lastIndex < text.length) {
-    const qaBlockStartIndex = text.indexOf('qa_block:', lastIndex);
-    if (qaBlockStartIndex === -1) {
-      const remainingText = text.substring(lastIndex);
-      if (remainingText) {
-        elements.push(<React.Fragment key={`text-${lastIndex}`}>{renderWithLatex(remainingText)}</React.Fragment>);
-      }
-      break;
-    }
-
-    const textBefore = text.substring(lastIndex, qaBlockStartIndex);
+  if (parts.length > 1) {
+    const textBefore = parts[0];
     if (textBefore) {
-      elements.push(<React.Fragment key={`text-${lastIndex}`}>{renderWithLatex(textBefore)}</React.Fragment>);
-    }
-
-    const jsonStartIndex = text.indexOf('{', qaBlockStartIndex);
-    if (jsonStartIndex === -1) {
-      const remainingText = text.substring(qaBlockStartIndex);
-      elements.push(<React.Fragment key={`text-${qaBlockStartIndex}`}>{renderWithLatex(remainingText)}</React.Fragment>);
-      break;
-    }
-
-    const jsonEndIndex = findJsonEnd(text, jsonStartIndex);
-    if (jsonEndIndex === -1) {
-      const remainingText = text.substring(qaBlockStartIndex);
-      elements.push(<React.Fragment key={`text-err-${qaBlockStartIndex}`}>{renderWithLatex(remainingText)}</React.Fragment>);
-      break;
-    }
-
-    const jsonString = text.substring(jsonStartIndex, jsonEndIndex);
-    try {
-      const sanitizedJsonString = jsonString.replace(/\\([^\\])/g, '\\\\$1');
-      const qaData = JSON.parse(sanitizedJsonString);
-      
-      const questionText = qaData.question;
-      const answerEntries = Object.entries(qaData.answers).map(([key, value]) => {
-        return [key, value as string] as [string, string];
-      });
-
       elements.push(
-        <div key={`qa-${lastIndex}`} className="space-y-2 my-4">
-          <div>
-            <strong>Question: </strong>
-            {renderWithLatex(questionText)}
-          </div>
-          {answerEntries.map(([key, value]) => (
-            <div key={key}><strong>{key}: </strong>{renderWithLatex(value)}</div>
-          ))}
-        </div>
+        <React.Fragment key={`text-before`}>
+          {applyFormatting(textBefore).map((node, i) => renderWithLatex(node, `before-${i}`))}
+        </React.Fragment>
       );
-      lastIndex = jsonEndIndex;
-    } catch (error) {
-      const problematicText = text.substring(qaBlockStartIndex, jsonEndIndex);
-      console.error("Error parsing qa_block:", error, "original text:", problematicText);
-      elements.push(<React.Fragment key={`text-err-parse-${qaBlockStartIndex}`}>{renderWithLatex(problematicText)}</React.Fragment>);
-      lastIndex = jsonEndIndex;
+    }
+    
+    let remainingText = parts.slice(1).join('');
+
+    const jsonStartIndex = remainingText.indexOf('{');
+    if (jsonStartIndex !== -1) {
+        const jsonEndIndex = findJsonEnd(remainingText, jsonStartIndex);
+
+        if (jsonEndIndex !== -1) {
+            const jsonString = remainingText.substring(jsonStartIndex, jsonEndIndex);
+            try {
+                const sanitizedJsonString = jsonString.replace(/\\([^\\])/g, '\\\\$1');
+                const qaData = JSON.parse(sanitizedJsonString);
+                
+                const questionText = qaData.question;
+                const answerEntries = Object.entries(qaData.answers).map(([key, value]) => {
+                    return [key, value as string] as [string, string];
+                });
+
+                elements.push(
+                    <div key={`qa-block`} className="space-y-2 my-4">
+                        <div>
+                            <strong>Question: </strong>
+                            {renderWithLatex(questionText, 'qa-question')}
+                        </div>
+                        {answerEntries.map(([key, value]) => (
+                            <div key={key}><strong>{key}: </strong>{renderWithLatex(value, `qa-ans-${key}`)}</div>
+                        ))}
+                    </div>
+                );
+                lastIndex = jsonEndIndex;
+
+                const textAfter = remainingText.substring(lastIndex);
+                if (textAfter) {
+                  elements.push(
+                    <React.Fragment key={`text-after`}>
+                      {applyFormatting(textAfter).map((node, i) => renderWithLatex(node, `after-${i}`))}
+                    </React.Fragment>
+                  );
+                }
+
+                return elements;
+            } catch (error) {
+                console.error("Error parsing qa_block:", error, "original text:", jsonString);
+                // If parsing fails, render the rest of the text normally
+            }
+        }
     }
   }
 
-  return elements;
+
+  // Fallback to render the whole text if no block is found or parsing fails
+  const formattedNodes = applyFormatting(rawText);
+  return formattedNodes.map((node, index) => renderWithLatex(node, index));
 };
 
 
 const FormattedMessage = ({ content, isUser }: FormattedMessageProps) => {
-  const processedContent = isUser ? content : content.replace(/\$/g, 'USD');
+  const processedContent = isUser ? content : content;
 
   const paragraphs = processedContent.split('\n\n').map((paragraph, i) => (
     <div key={i} className="my-1">
