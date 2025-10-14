@@ -12,30 +12,50 @@ type FormattedMessageProps = {
 const applyFormatting = (text: string): React.ReactNode[] => {
     const mathPlaceholder = '___MATH_PLACEHOLDER___';
     const mathBlocks: string[] = [];
+    const boldPlaceholder = '___BOLD_PLACEHOLDER___';
+    const boldBlocks: string[] = [];
+    const italicPlaceholder = '___ITALIC_PLACEHOLDER___';
+    const italicBlocks: string[] = [];
 
-    // First, isolate math blocks
-    const textWithoutMath = text.replace(/(<blockmath>[\s\S]*?<\/blockmath>|<math>[\s\S]*?<\/math>)/g, (match) => {
+    let processedText = text;
+    
+    // Isolate math blocks
+    processedText = processedText.replace(/(<blockmath>[\s\S]*?<\/blockmath>|<math>[\s\S]*?<\/math>)/g, (match) => {
         mathBlocks.push(match);
         return mathPlaceholder;
     });
 
-    // Split by bold and italic markers, keeping the delimiters
-    const parts = textWithoutMath.split(/(\*\*.*?\*\*)|(\*.*?\*)/g).filter(Boolean);
+    // Isolate bold blocks
+    processedText = processedText.replace(/(\*\*.*?\*\*)/g, (match) => {
+        boldBlocks.push(match);
+        return boldPlaceholder;
+    });
 
-    let mathBlockIndex = 0;
+    // Isolate italic blocks
+    processedText = processedText.replace(/(\*.*?\*)/g, (match) => {
+        italicBlocks.push(match);
+        return italicPlaceholder;
+    });
+
+    const parts = processedText.split(/(___MATH_PLACEHOLDER___|___BOLD_PLACEHOLDER___|___ITALIC_PLACEHOLDER___)/g).filter(Boolean);
+
+    let mathIndex = 0;
+    let boldIndex = 0;
+    let italicIndex = 0;
+
     return parts.map((part, i) => {
         if (part === mathPlaceholder) {
-            return mathBlocks[mathBlockIndex++];
+            return mathBlocks[mathIndex++];
         }
-        if (part.startsWith('**') && part.endsWith('**')) {
-            const content = part.slice(2, -2);
+        if (part === boldPlaceholder) {
+            const content = boldBlocks[boldIndex++].slice(2, -2);
             if (content === '[Before you exit, please take the survey by clicking the button below.]') {
               return <strong key={i} className="text-destructive">{content}</strong>
             }
             return <strong key={i} className="font-bold text-blue-600">{content}</strong>;
         }
-        if (part.startsWith('*') && part.endsWith('*')) {
-            return <em key={i}>{part.slice(1, -1)}</em>;
+        if (part === italicPlaceholder) {
+            return <em key={i}>{italicBlocks[italicIndex++].slice(1, -1)}</em>;
         }
         return part;
     });
@@ -43,17 +63,24 @@ const applyFormatting = (text: string): React.ReactNode[] => {
 
 const renderWithLatex = (node: React.ReactNode, key: string | number) => {
   if (typeof node !== 'string') {
-    return React.cloneElement(node as React.ReactElement, { key });
+    // If it's already a React element (like <strong> or <em>), just add a key and return it.
+    if (React.isValidElement(node)) {
+        return React.cloneElement(node, { key });
+    }
+    return node;
   }
-
+  
+  // This is for string parts, including those that are just the math content.
   const textWithDelimiters = node
     .replace(/<blockmath>/g, '$$')
     .replace(/<\/blockmath>/g, '$$')
     .replace(/<math>/g, '$')
     .replace(/<\/math>/g, '$');
   
-  return <Latex key={key}>{textWithDelimiters}</Latex>;
+  // The string might contain newlines which should be preserved.
+  return <span key={key}><Latex>{textWithDelimiters}</Latex></span>;
 };
+
 
 const findJsonEnd = (text: string, startIndex: number) => {
   let openBraces = 0;
@@ -96,67 +123,61 @@ const renderQaBlock = (rawText: string, isUser: boolean) => {
   const elements: React.ReactNode[] = [];
   let lastIndex = 0;
 
-  const regex = /(qa_block:)/;
-  const parts = rawText.split(regex);
+  const regex = /qa_block\s*[:=]?\s*/;
+  const match = rawText.match(regex);
 
-  if (parts.length > 1) {
-    const textBefore = parts[0];
-    if (textBefore) {
-      elements.push(
-        <React.Fragment key={`text-before`}>
-          {applyFormatting(textBefore).map((node, i) => renderWithLatex(node, `before-${i}`))}
-        </React.Fragment>
-      );
-    }
-    
-    let remainingText = parts.slice(1).join('');
+  if (match && match.index !== undefined) {
+      const textBefore = rawText.substring(0, match.index);
+      if (textBefore) {
+          elements.push(
+              <React.Fragment key={`text-before`}>
+                  {applyFormatting(textBefore).map((node, i) => renderWithLatex(node, `before-${i}`))}
+              </React.Fragment>
+          );
+      }
 
-    const jsonStartIndex = remainingText.indexOf('{');
-    if (jsonStartIndex !== -1) {
-        const jsonEndIndex = findJsonEnd(remainingText, jsonStartIndex);
+      const jsonStartIndex = match.index + match[0].length;
+      const jsonEndIndex = findJsonEnd(rawText, jsonStartIndex);
 
-        if (jsonEndIndex !== -1) {
-            const jsonString = remainingText.substring(jsonStartIndex, jsonEndIndex);
-            try {
-                const sanitizedJsonString = jsonString.replace(/\\([^\\])/g, '\\\\$1');
-                const qaData = JSON.parse(sanitizedJsonString);
-                
-                const questionText = qaData.question;
-                const answerEntries = Object.entries(qaData.answers).map(([key, value]) => {
-                    return [key, value as string] as [string, string];
-                });
+      if (jsonEndIndex !== -1) {
+          const jsonString = rawText.substring(jsonStartIndex, jsonEndIndex);
+          try {
+              const sanitizedJsonString = jsonString.replace(/\\([^\\])/g, '\\\\$1');
+              const qaData = JSON.parse(sanitizedJsonString);
+              
+              const questionText = qaData.question;
+              const answerEntries = Object.entries(qaData.answers).map(([key, value]) => {
+                  return [key, value as string] as [string, string];
+              });
 
+              elements.push(
+                  <div key={`qa-block`} className="space-y-2 my-4">
+                      <div>
+                          <strong>Question: </strong>
+                          {renderWithLatex(questionText, 'qa-question')}
+                      </div>
+                      {answerEntries.map(([key, value]) => (
+                          <div key={key}><strong>{key}: </strong>{renderWithLatex(value, `qa-ans-${key}`)}</div>
+                      ))}
+                  </div>
+              );
+              lastIndex = jsonEndIndex;
+
+              const textAfter = rawText.substring(lastIndex);
+              if (textAfter) {
                 elements.push(
-                    <div key={`qa-block`} className="space-y-2 my-4">
-                        <div>
-                            <strong>Question: </strong>
-                            {renderWithLatex(questionText, 'qa-question')}
-                        </div>
-                        {answerEntries.map(([key, value]) => (
-                            <div key={key}><strong>{key}: </strong>{renderWithLatex(value, `qa-ans-${key}`)}</div>
-                        ))}
-                    </div>
+                  <React.Fragment key={`text-after`}>
+                    {applyFormatting(textAfter).map((node, i) => renderWithLatex(node, `after-${i}`))}
+                  </React.Fragment>
                 );
-                lastIndex = jsonEndIndex;
+              }
+              return elements;
 
-                const textAfter = remainingText.substring(lastIndex);
-                if (textAfter) {
-                  elements.push(
-                    <React.Fragment key={`text-after`}>
-                      {applyFormatting(textAfter).map((node, i) => renderWithLatex(node, `after-${i}`))}
-                    </React.Fragment>
-                  );
-                }
-
-                return elements;
-            } catch (error) {
-                console.error("Error parsing qa_block:", error, "original text:", jsonString);
-                // If parsing fails, render the rest of the text normally
-            }
-        }
-    }
+          } catch (error) {
+              console.error("Error parsing qa_block:", error, "original text:", jsonString);
+          }
+      }
   }
-
 
   // Fallback to render the whole text if no block is found or parsing fails
   const formattedNodes = applyFormatting(rawText);
