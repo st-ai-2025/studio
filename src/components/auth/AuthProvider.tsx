@@ -2,7 +2,7 @@
 "use client";
 
 import { createContext, useEffect, useState, type ReactNode } from "react";
-import { onAuthStateChanged, signInWithPopup, signOut as firebaseSignOut, GoogleAuthProvider } from "firebase/auth";
+import { onAuthStateChanged, signInWithRedirect, signOut as firebaseSignOut, GoogleAuthProvider } from "firebase/auth";
 import { auth, googleProvider } from "@/lib/firebase";
 import type { User } from "@/types";
 
@@ -30,14 +30,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signInWithGoogle = async () => {
     setLoading(true);
     try {
-      await signInWithPopup(auth, googleProvider);
+      await signInWithRedirect(auth, googleProvider);
     } catch (error: any) {
-      if (error.code === 'auth/popup-closed-by-user') {
-        setLoading(false);
-      } else {
-        console.error("Error signing in with Google", error);
-        setLoading(false);
-      }
+      console.error("Error signing in with Google", error);
+      setLoading(false);
     }
   };
 
