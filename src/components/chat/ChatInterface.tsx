@@ -31,7 +31,7 @@ import type { Message } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { Logo } from "../Logo";
 import { db, createUserProfile } from "@/lib/firebase";
-import { addDoc, collection, serverTimestamp, doc, setDoc } from "firebase/firestore";
+import { addDoc, collection, serverTimestamp, doc, setDoc, Timestamp } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 
 type ChatInterfaceProps = {
@@ -43,7 +43,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
   const { user, signOut } = useAuth();
   const { toast } = useToast();
   const router = useRouter();
-  const [messages, setMessages] = useState<Omit<Message, 'id' | 'timestamp'>>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isResponding, setIsResponding] = useState(false);
   const [isFirstMessage, setIsFirstMessage] = useState(true);
@@ -85,10 +85,12 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
       try {
         const res = await generateContextAwareIntroduction({ surveyResponses: surveyData });
         if (res.introduction) {
-          const introMsg = {
+          const introMsg: Message = {
+            id: 'intro-1',
             content: res.introduction,
             role: 'assistant' as const,
             userId: user.uid,
+            timestamp: Timestamp.now(),
           };
           setMessages([introMsg]);
         }
@@ -101,8 +103,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
     };
 
     generateIntro();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, surveyData]);
+  }, [user, surveyData, toast]);
 
 
   const handleSend = async () => {
@@ -116,10 +117,12 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
     }
 
     const userMessageContent = input.trim();
-    const userMessage = {
+    const userMessage: Message = {
+      id: `user-${Date.now()}`,
       content: userMessageContent,
       role: "user" as const,
       userId: user.uid,
+      timestamp: Timestamp.now(),
     };
 
     const updatedMessages = [...messages, userMessage];
@@ -158,21 +161,21 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
         history: updatedMessages.map(({ role, content }) => ({ role, content })),
       });
       
-      if (res.chatbotResponse) {
-        const trimmedResponse = res.chatbotResponse.trim();
-        
+      if (res) {
         if (
-          trimmedResponse.includes(
+          res.response.includes(
             "[Before you exit, please take the survey by clicking the button below.]"
           )
         ) {
           setShowPostSurveyButton(true);
         }
 
-        const assistantMessage = {
-          content: trimmedResponse,
+        const assistantMessage: Message = {
+          id: `assistant-${Date.now()}`,
+          content: JSON.stringify(res),
           role: "assistant" as const,
           userId: user.uid,
+          timestamp: Timestamp.now(),
         };
 
         setMessages((prevMessages) => [...prevMessages, assistantMessage]);
@@ -184,7 +187,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
       }
     } catch (error) {
       console.error("Error sending message:", error);
-      setMessages(messages); // Revert to previous state on error
+      setMessages(prevMessages => prevMessages.slice(0, -1));
       toast({
         variant: "destructive",
         title: "Failed to send message",
@@ -234,7 +237,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
         <ScrollArea className="h-full">
           <div className="p-4 md:p-6 space-y-6">
             {messages.map((msg, index) => (
-              <ChatMessage key={index} message={msg} />
+              <ChatMessage key={msg.id || index} message={msg} />
             ))}
             {isResponding && (
                 <div className="flex items-start gap-4">
@@ -307,7 +310,3 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
     </div>
   );
 }
-
-    
-
-    

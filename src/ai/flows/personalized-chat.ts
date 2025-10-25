@@ -22,7 +22,15 @@ const PersonalizedChatInputSchema = z.object({
 export type PersonalizedChatInput = z.infer<typeof PersonalizedChatInputSchema>;
 
 const PersonalizedChatOutputSchema = z.object({
-  chatbotResponse: z.string().describe("The chatbot's personalized response."),
+    response: z.string().describe('The main response from the chatbot.'),
+    answers: z
+        .object({
+            A: z.string(),
+            B: z.string(),
+            C: z.string(),
+            D: z.string(),
+        })
+        .optional().describe('The optional multiple choice answers for the question in the main response.'),
 });
 export type PersonalizedChatOutput = z.infer<typeof PersonalizedChatOutputSchema>;
 
@@ -50,12 +58,14 @@ const prompt = ai.definePrompt({
   Suggest a few topic examples to start.  Once the student picked a topic, ask them a series of 
   multiple-choice questions to test their knowledge. Make sure that these questions cover 
   different aspects of the topic, and that you ask these questions one-by-one and assess the student's 
-  answer individually. Avoid questions that require visualization, since you can only output text.
+  answer individually. Avoid questions that require visualization, since you can only output text. 
+  ##Critical: If you ask a multiple-choice question, end the response with "Question: Question text", 
+  then generate an 'answers' block with structured answer options. 
 
   If the student consistently answers the questions correctly, increase the difficulty of the next question 
   to probe for possible gaps in their knowledge. If the student makes a mistake 
   in answering any question, adapt the follow-up questions to further test 
-  their knowledge about that subtopic. Make sure you ask at least 5 questions about that subtopic, to establish
+  their knowledge about that subtopic. Make sure you ask at least 5 multiple-choice questions about that subtopic, to establish
   a baseline assessment. After that, continue the tutoring through interactive discussions or additional Q&A.
   Don't continue Q&A for too long to avoid quiz fatigue. Add fun facts or stories related to the subtopic to 
   the conversation between questions, to make the discussion fun and interesting, with the goal of 
@@ -64,18 +74,6 @@ const prompt = ai.definePrompt({
   The student is always welcome to change topic or even subject during the session. If they choose to do so, 
   restart from the step of testing their domain knowledge with Q&A, as outlined above.
 
-  # Formatting Q&A
-  When generating a Q&A block as part of the response, use the following format:
-  qa_block:{
-    "question": "question text",
-    "answers": {
-      "A": "answer A",
-      "B": "answer B",
-      "C": "answer C",
-      "D": "answer D"
-    }
-  }
-  ## Critical: Always start qa_block with a new line.  
 
   # Formatting mathematical expressions
   The message output may include Latex mathmatical expressions. For all inline mathematical expressions, 
@@ -110,8 +108,8 @@ const prompt = ai.definePrompt({
   do NOT repeat the ones already asked.
 
   # Exit survey and final message
-  After you completed the assessment of ALL questions above, send the following, 
-  in bold and as a separate message, to remind the student to take the final survey:
+  After you completed the assessment of ALL questions above, and sent the response back, send the following
+  extra message to remind the student to take the final survey:
 
   "**[Before you exit, please take the survey by clicking the button below.]**"
  
