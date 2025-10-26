@@ -9,3 +9,4 @@ To get started, take a look at src/app/page.tsx.
 <!-- New deployment trigger --> added autoDomain for Firebase hosted app: studio--formflow-reloaded-371866-5d26e.us-east4.hosted.app
 <!-- Triggering new deployment to apply updated secret -->
 <!-- Final deployment to fix auth domain issues -->
+<!-- Redeploying to apply AuthProvider fix -->
