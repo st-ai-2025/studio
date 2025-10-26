@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useEffect, useState, type ReactNode } from "react";
-import { onAuthStateChanged, signInWithPopup, signOut as firebaseSignOut, type UserCredential } from "firebase/auth";
+import { onAuthStateChanged, signInWithPopup, signOut as firebaseSignOut } from "firebase/auth";
 import { auth, googleProvider, createUserProfile } from "@/lib/firebase";
 import type { User } from "@/types";
 
@@ -19,30 +19,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        // User is signed in. Create or update their profile, then set the user.
+        await createUserProfile(user);
+        setUser(user);
+      } else {
+        // User is signed out.
+        setUser(null);
+      }
       setLoading(false);
     });
     return () => unsubscribe();
   }, []);
 
   const signInWithGoogle = async () => {
-    setLoading(true);
     try {
-      const result: UserCredential = await signInWithPopup(auth, googleProvider);
-      // The user object is available in the result.
-      await createUserProfile(result.user);
+      await signInWithPopup(auth, googleProvider);
+      // The onAuthStateChanged listener will handle profile creation and state updates.
     } catch (error: any) {
       if (error.code === 'auth/popup-closed-by-user') {
-        // This is a common scenario & not a critical error.
         console.log("Sign-in popup closed by user.");
       } else {
-        console.error("Error during sign-in or profile creation:", error);
+        console.error("Error during sign-in:", error);
       }
-    } finally {
-      // Ensure loading is always turned off, even if there's an error.
-      // onAuthStateChanged will also set loading to false on success, but this is a good failsafe.
-      setLoading(false);
     }
   };
 
