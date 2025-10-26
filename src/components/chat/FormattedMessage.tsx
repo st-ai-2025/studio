@@ -32,6 +32,9 @@ const renderText = (text: string) => {
         }
         if (part.startsWith('**')) {
             const boldText = part.substring(2, part.length - 2);
+            if (boldText === '[Before you exit, please take the survey by clicking the button below.]') {
+                return <strong key={index} className="font-bold text-red-600 block">{boldText}</strong>;
+            }
             return <strong key={index} className="font-bold text-blue-600">{boldText}</strong>;
         }
 
