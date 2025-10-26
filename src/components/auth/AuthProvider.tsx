@@ -1,8 +1,7 @@
-
 "use client";
 
 import { createContext, useEffect, useState, type ReactNode } from "react";
-import { onAuthStateChanged, signInWithPopup, signOut as firebaseSignOut } from "firebase/auth";
+import { onAuthStateChanged, signInWithPopup, signOut as firebaseSignOut, type UserCredential } from "firebase/auth";
 import { auth, googleProvider, createUserProfile } from "@/lib/firebase";
 import type { User } from "@/types";
 
@@ -20,11 +19,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        // User is signed in. Create their profile in Firestore if it doesn't exist.
-        await createUserProfile(user);
-      }
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
       setLoading(false);
     });
@@ -34,14 +29,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signInWithGoogle = async () => {
     setLoading(true);
     try {
-      await signInWithPopup(auth, googleProvider);
+      const result: UserCredential = await signInWithPopup(auth, googleProvider);
+      // The user object is available in the result.
+      await createUserProfile(result.user);
     } catch (error: any) {
       if (error.code === 'auth/popup-closed-by-user') {
-        setLoading(false);
+        // This is a common scenario & not a critical error.
+        console.log("Sign-in popup closed by user.");
       } else {
-        console.error("Error signing in with Google", error);
-        setLoading(false);
+        console.error("Error during sign-in or profile creation:", error);
       }
+    } finally {
+      // Ensure loading is always turned off, even if there's an error.
+      // onAuthStateChanged will also set loading to false on success, but this is a good failsafe.
+      setLoading(false);
     }
   };
 
