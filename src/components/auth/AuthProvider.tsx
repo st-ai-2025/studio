@@ -2,8 +2,8 @@
 "use client";
 
 import { createContext, useEffect, useState, type ReactNode } from "react";
-import { onAuthStateChanged, signInWithRedirect, signOut as firebaseSignOut, GoogleAuthProvider } from "firebase/auth";
-import { auth, googleProvider } from "@/lib/firebase";
+import { onAuthStateChanged, signInWithPopup, signOut as firebaseSignOut } from "firebase/auth";
+import { auth, googleProvider, createUserProfile } from "@/lib/firebase";
 import type { User } from "@/types";
 
 interface AuthContextType {
@@ -20,7 +20,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        // User is signed in. Create their profile in Firestore if it doesn't exist.
+        await createUserProfile(user);
+      }
       setUser(user);
       setLoading(false);
     });
@@ -30,10 +34,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signInWithGoogle = async () => {
     setLoading(true);
     try {
-      await signInWithRedirect(auth, googleProvider);
+      await signInWithPopup(auth, googleProvider);
     } catch (error: any) {
-      console.error("Error signing in with Google", error);
-      setLoading(false);
+      if (error.code === 'auth/popup-closed-by-user') {
+        setLoading(false);
+      } else {
+        console.error("Error signing in with Google", error);
+        setLoading(false);
+      }
     }
   };
 
