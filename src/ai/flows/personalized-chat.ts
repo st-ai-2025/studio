@@ -114,14 +114,16 @@ const prompt = ai.definePrompt({
   "**[Before you exit, please take the survey by clicking the button below.]**"
  
   # Conversation History:
+  {{#if history}}
   {{#each history}}
-  {{#if isUser}}
-  User: {{{content}}}
+  {{#if this.isUser}}
+  User: {{{this.content}}}
   {{/if}}
-  {{#if isAssistant}}
-  Assistant: {{{content}}}
+  {{#if this.isAssistant}}
+  Assistant: {{{this.content}}}
   {{/if}}
   {{/each}}
+  {{/if}}
   `,
 });
 

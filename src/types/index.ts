@@ -9,4 +9,10 @@ export interface Message {
   role: 'user' | 'assistant';
   content: string;
   timestamp: Timestamp;
+  answers?: {
+    A: string;
+    B: string;
+    C: string;
+    D: string;
+  };
 }
