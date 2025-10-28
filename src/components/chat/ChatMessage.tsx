@@ -27,16 +27,6 @@ export default function ChatMessage({ message }: ChatMessageProps) {
       >
         <CardContent className="p-3 message-content">
           <FormattedMessage content={message.content} isUser={isUser} />
-          {message.answers && (
-            <div className="mt-2 space-y-2">
-              {Object.entries(message.answers).map(([key, value]) => (
-                <div key={key} className="flex items-center gap-2">
-                  <span className="font-bold">{key}:</span>
-                  <span>{value}</span>
-                </div>
-              ))}
-            </div>
-          )}
         </CardContent>
       </Card>
     </div>

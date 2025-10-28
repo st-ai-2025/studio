@@ -172,11 +172,10 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
 
         const assistantMessage: Message = {
           id: `assistant-${Date.now()}`,
-          content: res.response,
+          content: JSON.stringify(res),
           role: "assistant" as const,
           userId: user.uid,
           timestamp: Timestamp.now(),
-          answers: res.answers
         };
 
         setMessages((prevMessages) => [...prevMessages, assistantMessage]);
