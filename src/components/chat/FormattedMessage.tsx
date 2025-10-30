@@ -38,7 +38,11 @@ const renderText = (text: string) => {
             }
             return <strong key={index} className="font-bold text-blue-600">{boldText}</strong>;
         }
-
+        if (part.startsWith('*')) {
+          const italicText = part.substring(1, part.length - 1);
+          return <em key={index}>{italicText}</em>;
+        }
+        
         return part.split('\n').map((line, i, arr) => (
             <Fragment key={`${index}-${i}`}>
                 {line}

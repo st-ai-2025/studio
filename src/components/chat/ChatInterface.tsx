@@ -216,7 +216,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
       <header className="flex h-16 shrink-0 items-center justify-between border-b bg-card px-4 md:px-6">
         <div className="flex items-center gap-3">
           <Logo className="h-8 w-8"/>
-          <h1 className="text-lg font-semibold font-headline">TutorFlow</h1>
+          <h1 className="text-lg font-semibold font-headline">TutorFlow v2</h1>
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

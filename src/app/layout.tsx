@@ -4,7 +4,7 @@ import { Providers } from '@/components/Providers';
 import "katex/dist/katex.min.css";
 
 export const metadata: Metadata = {
-  title: 'TutorFlow',
+  title: 'TutorFlow v2',
   description: 'Your personal AI Tutor.',
 };
 
