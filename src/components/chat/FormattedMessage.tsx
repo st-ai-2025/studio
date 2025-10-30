@@ -18,7 +18,7 @@ const renderText = (text: string) => {
 
     const spacedText = text.replace(/([.!?])(\w)/g, '$1 $2');
     
-    const parts = spacedText.split(/(<math>.*?<\/math>|<blockmath>.*?<\/blockmath>|\*\*.*?\*\*)/g);
+    const parts = spacedText.split(/(<math>.*?<\/math>|<blockmath>.*?<\/blockmath>|\*\*.*?\*\*|\*.*?\*)/g);
 
     return parts.filter(part => part).map((part, index) => {
         if (part.startsWith('<math>')) {
