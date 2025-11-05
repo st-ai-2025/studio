@@ -34,7 +34,7 @@ export default function ConsentForm({ onConsent, hasAlreadyConsented }: ConsentF
   }, []);
 
   return (
-    <Card className="w-full max-w-4xl shadow-xl flex flex-col h-[90vh]">
+    <Card className="w-full max-w-4xl shadow-xl">
        <CardHeader>
           <div className="flex justify-between items-start">
             <div className="flex-grow text-center">
@@ -43,9 +43,9 @@ export default function ConsentForm({ onConsent, hasAlreadyConsented }: ConsentF
               </div>
               <CardTitle className="text-2xl font-headline">Consent to Participate</CardTitle>
               <CardDescription className="pt-2">
-                <span className="font-bold text-blue-600">Please scroll to review and sign the consent form below.</span>
+                <span className="font-bold text-blue-600">Please review and sign the consent form below</span>
                 <br />
-                Click 'Done' after you submitted the form. If you have submitted a form previously, click 'Already submitted' to proceed.
+                Click 'Done' after submission, or 'Already submitted' if you have submitted a consent form previously.
               </CardDescription>
             </div>
             <Button variant="ghost" size="icon" onClick={signOut} aria-label="Sign out">
@@ -53,9 +53,9 @@ export default function ConsentForm({ onConsent, hasAlreadyConsented }: ConsentF
             </Button>
           </div>
         </CardHeader>
-      <CardContent className="text-center flex-grow flex flex-col p-6">
-        <div id="jotform-container" className="flex-grow relative border rounded-lg overflow-auto w-full" />
-        <div className="mt-6 flex justify-center gap-4">
+      <CardContent className="p-6">
+        <div id="jotform-container" className="border rounded-lg" />
+        <div className="mt-4 flex justify-center gap-4">
             <Button onClick={onConsent} className="w-full max-w-xs mx-auto">Done</Button>
             {hasAlreadyConsented && (
                 <Button onClick={onConsent} variant="secondary" className="w-full max-w-xs mx-auto">Already submitted</Button>
