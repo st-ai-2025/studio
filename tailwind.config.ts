@@ -16,6 +16,8 @@ export default {
         code: ['"Source Code Pro"', 'monospace'],
       },
       colors: {
+        'logo-purple': '#A777FF',
+        'logo-blue': '#4A90E2',
         'logo-yellow': '#FFD54F',
         'logo-orange': '#FFB74D',
         background: 'hsl(var(--background))',

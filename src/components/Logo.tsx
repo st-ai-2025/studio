@@ -34,8 +34,8 @@ export function Logo(props: SVGProps<SVGSVGElement>) {
           y2="32"
           gradientUnits="userSpaceOnUse"
         >
-          <stop stopColor="#FFD54F" />
-          <stop offset="1" stopColor="#FFB74D" />
+          <stop stopColor="#A777FF" />
+          <stop offset="1" stopColor="#4A90E2" />
         </linearGradient>
       </defs>
     </svg>
