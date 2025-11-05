@@ -54,7 +54,7 @@ export default function ConsentForm({ onConsent, hasAlreadyConsented }: ConsentF
           </div>
         </CardHeader>
       <CardContent className="text-center flex-grow flex flex-col p-6">
-        <div id="jotform-container" className="flex-grow relative border rounded-lg overflow-hidden w-full" />
+        <div id="jotform-container" className="flex-grow relative border rounded-lg overflow-auto w-full" />
         <div className="mt-6 flex justify-center gap-4">
             <Button onClick={onConsent} className="w-full max-w-xs mx-auto">Done</Button>
             {hasAlreadyConsented && (

@@ -22,7 +22,7 @@ export default function ChatMessage({ message }: ChatMessageProps) {
       <Card
         className={cn(
           "max-w-[75%]",
-          isUser ? "bg-primary text-primary-foreground" : "bg-card shadow-sm"
+          isUser ? "bg-secondary text-secondary-foreground" : "bg-card shadow-sm"
         )}
       >
         <CardContent className="p-3 message-content">

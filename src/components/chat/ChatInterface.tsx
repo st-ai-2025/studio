@@ -259,7 +259,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
         <div className="relative">
           <Textarea
             placeholder="Type your message..."
-            className="pr-20 min-h-[50px] resize-none"
+            className="pr-20 min-h-[50px] resize-none text-sm"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => {
@@ -285,7 +285,7 @@ export default function ChatInterface({ surveyData, onResetSurvey }: ChatInterfa
             ) : (
                 <AlertDialog>
                 <AlertDialogTrigger asChild>
-                    <Button variant="destructive" className="bg-red-400 hover:bg-red-500 text-white">End Session</Button>
+                    <Button variant="destructive" className="bg-gray-300 hover:bg-logo-yellow text-gray-800 hover:text-white">End Session</Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
