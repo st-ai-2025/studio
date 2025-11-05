@@ -42,10 +42,11 @@ export default function PostSurveyForm({ onSubmit, isSubmitting }: PostSurveyFor
             name="understandingChange"
             render={({ field }) => (
                 <FormItem>
-                <FormLabel>1. After this tutoring session, my understanding of this subject is:</FormLabel>
+                <FormLabel htmlFor="understandingChange">1. After this tutoring session, my understanding of this subject is:</FormLabel>
                 <FormControl>
                     <div className="relative">
                         <Slider
+                            id="understandingChange"
                             min={1}
                             max={5}
                             step={1}
@@ -74,10 +75,11 @@ export default function PostSurveyForm({ onSubmit, isSubmitting }: PostSurveyFor
             name="interestChange"
             render={({ field }) => (
                 <FormItem>
-                <FormLabel>2. After this tutoring session, my level of interest in this subject is:</FormLabel>
+                <FormLabel htmlFor="interestChange">2. After this tutoring session, my level of interest in this subject is:</FormLabel>
                  <FormControl>
                     <div className="relative">
                         <Slider
+                            id="interestChange"
                             min={1}
                             max={5}
                             step={1}
@@ -115,21 +117,21 @@ export default function PostSurveyForm({ onSubmit, isSubmitting }: PostSurveyFor
                       >
                         <FormItem className="flex items-center space-x-3 space-y-0">
                           <FormControl>
-                            <RadioGroupItem value="yes" />
+                            <RadioGroupItem value="yes" id="futureInterest-yes"/>
                           </FormControl>
-                          <FormLabel className="font-normal">Yes</FormLabel>
+                          <FormLabel htmlFor="futureInterest-yes" className="font-normal">Yes</FormLabel>
                         </FormItem>
                         <FormItem className="flex items-center space-x-3 space-y-0">
                           <FormControl>
-                            <RadioGroupItem value="no" />
+                            <RadioGroupItem value="no" id="futureInterest-no"/>
                           </FormControl>
-                          <FormLabel className="font-normal">No</FormLabel>
+                          <FormLabel htmlFor="futureInterest-no" className="font-normal">No</FormLabel>
                         </FormItem>
                         <FormItem className="flex items-center space-x-3 space-y-0">
                           <FormControl>
-                            <RadioGroupItem value="not_sure" />
+                            <RadioGroupItem value="not_sure" id="futureInterest-not_sure"/>
                           </FormControl>
-                          <FormLabel className="font-normal">Not sure</FormLabel>
+                          <FormLabel htmlFor="futureInterest-not_sure" className="font-normal">Not sure</FormLabel>
                         </FormItem>
                       </RadioGroup>
                     </FormControl>
@@ -142,9 +144,9 @@ export default function PostSurveyForm({ onSubmit, isSubmitting }: PostSurveyFor
           name="mostHelpful"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>What aspects of the tutoring session were most helpful to you?</FormLabel>
+              <FormLabel htmlFor="mostHelpful">What aspects of the tutoring session were most helpful to you?</FormLabel>
               <FormControl>
-                <Textarea placeholder="Your feedback..." {...field} className="text-sm" />
+                <Textarea id="mostHelpful" placeholder="Your feedback..." {...field} className="text-sm" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -155,9 +157,9 @@ export default function PostSurveyForm({ onSubmit, isSubmitting }: PostSurveyFor
           name="missingAspects"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>What other helpful aspects of tutoring were missing in the previous session</FormLabel>
+              <FormLabel htmlFor="missingAspects">What other helpful aspects of tutoring were missing in the previous session</FormLabel>
               <FormControl>
-                <Textarea placeholder="Your feedback..." {...field} className="text-sm" />
+                <Textarea id="missingAspects" placeholder="Your feedback..." {...field} className="text-sm" />
               </FormControl>
               <FormMessage />
             </FormItem>

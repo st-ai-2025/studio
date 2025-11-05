@@ -68,10 +68,10 @@ export default function SurveyForm({ onSubmit }: SurveyFormProps) {
                 name="graduationYear"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>1. Your high school graduation year</FormLabel>
+                    <FormLabel htmlFor="graduationYear">1. Your high school graduation year</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger id="graduationYear">
                           <SelectValue placeholder="Select year" />
                         </SelectTrigger>
                       </FormControl>
@@ -93,7 +93,7 @@ export default function SurveyForm({ onSubmit }: SurveyFormProps) {
                 name="subject"
                 render={({ field }) => (
                   <FormItem className="space-y-3">
-                    <FormLabel>2. Which subject area would you like to receive tutoring today?</FormLabel>
+                    <FormLabel htmlFor="subject">2. Which subject area would you like to receive tutoring today?</FormLabel>
                     <FormControl>
                       <RadioGroup
                         onValueChange={field.onChange}
@@ -102,45 +102,45 @@ export default function SurveyForm({ onSubmit }: SurveyFormProps) {
                       >
                         <FormItem className="flex items-center space-x-3 space-y-0">
                           <FormControl>
-                            <RadioGroupItem value="math" />
+                            <RadioGroupItem value="math" id="math" />
                           </FormControl>
-                          <FormLabel className="font-normal">Math</FormLabel>
+                          <FormLabel htmlFor="math" className="font-normal">Math</FormLabel>
                         </FormItem>
                         <FormItem className="flex items-center space-x-3 space-y-0">
                           <FormControl>
-                            <RadioGroupItem value="science" />
+                            <RadioGroupItem value="science" id="science" />
                           </FormControl>
-                          <FormLabel className="font-normal">Science</FormLabel>
+                          <FormLabel htmlFor="science" className="font-normal">Science</FormLabel>
                         </FormItem>
                         <FormItem className="flex items-center space-x-3 space-y-0">
                           <FormControl>
-                            <RadioGroupItem value="english" />
+                            <RadioGroupItem value="english" id="english" />
                           </FormControl>
-                          <FormLabel className="font-normal">English</FormLabel>
+                          <FormLabel htmlFor="english" className="font-normal">English</FormLabel>
                         </FormItem>
                         <FormItem className="flex items-center space-x-3 space-y-0">
                           <FormControl>
-                            <RadioGroupItem value="foreign language" />
+                            <RadioGroupItem value="foreign language" id="foreign-language" />
                           </FormControl>
-                          <FormLabel className="font-normal">Foreign Language</FormLabel>
+                          <FormLabel htmlFor="foreign-language" className="font-normal">Foreign Language</FormLabel>
                         </FormItem>
                         <FormItem className="flex items-center space-x-3 space-y-0">
                           <FormControl>
-                            <RadioGroupItem value="social studies" />
+                            <RadioGroupItem value="social studies" id="social-studies" />
                           </FormControl>
-                          <FormLabel className="font-normal">Social Studies</FormLabel>
+                          <FormLabel htmlFor="social-studies" className="font-normal">Social Studies</FormLabel>
                         </FormItem>
                         <FormItem className="flex items-center space-x-3 space-y-0">
                           <FormControl>
-                            <RadioGroupItem value="sat" />
+                            <RadioGroupItem value="sat" id="sat" />
                           </FormControl>
-                          <FormLabel className="font-normal">SAT</FormLabel>
+                          <FormLabel htmlFor="sat" className="font-normal">SAT</FormLabel>
                         </FormItem>
                         <FormItem className="flex items-center space-x-3 space-y-0">
                           <FormControl>
-                            <RadioGroupItem value="act" />
+                            <RadioGroupItem value="act" id="act" />
                           </FormControl>
-                          <FormLabel className="font-normal">ACT</FormLabel>
+                          <FormLabel htmlFor="act" className="font-normal">ACT</FormLabel>
                         </FormItem>
                       </RadioGroup>
                     </FormControl>
@@ -154,10 +154,11 @@ export default function SurveyForm({ onSubmit }: SurveyFormProps) {
                 name="interestLevel"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>3. How would you rate your level of study interest in this area?</FormLabel>
+                    <FormLabel htmlFor="interestLevel">3. How would you rate your level of study interest in this area?</FormLabel>
                      <FormControl>
                         <div className="relative">
                             <Slider
+                                id="interestLevel"
                                 min={1}
                                 max={5}
                                 step={1}
@@ -186,7 +187,7 @@ export default function SurveyForm({ onSubmit }: SurveyFormProps) {
                 name="aiUsage"
                 render={({ field }) => (
                   <FormItem className="space-y-3">
-                    <FormLabel>4. How frequently do you use AI tools to assist your learning in this subject area?</FormLabel>
+                    <FormLabel htmlFor="aiUsage">4. How frequently do you use AI tools to assist your learning in this subject area?</FormLabel>
                     <FormControl>
                       <RadioGroup
                         onValueChange={field.onChange}
@@ -195,27 +196,27 @@ export default function SurveyForm({ onSubmit }: SurveyFormProps) {
                       >
                         <FormItem className="flex items-center space-x-3 space-y-0">
                           <FormControl>
-                            <RadioGroupItem value="daily" />
+                            <RadioGroupItem value="daily" id="daily" />
                           </FormControl>
-                          <FormLabel className="font-normal">Daily</FormLabel>
+                          <FormLabel htmlFor="daily" className="font-normal">Daily</FormLabel>
                         </FormItem>
                         <FormItem className="flex items-center space-x-3 space-y-0">
                           <FormControl>
-                            <RadioGroupItem value="weekly" />
+                            <RadioGroupItem value="weekly" id="weekly" />
                           </FormControl>
-                          <FormLabel className="font-normal">Weekly</FormLabel>
+                          <FormLabel htmlFor="weekly" className="font-normal">Weekly</FormLabel>
                         </FormItem>
                         <FormItem className="flex items-center space-x-3 space-y-0">
                           <FormControl>
-                            <RadioGroupItem value="monthly" />
+                            <RadioGroupItem value="monthly" id="monthly" />
                           </FormControl>
-                          <FormLabel className="font-normal">Monthly</FormLabel>
+                          <FormLabel htmlFor="monthly" className="font-normal">Monthly</FormLabel>
                         </FormItem>
                         <FormItem className="flex items-center space-x-3 space-y-0">
                           <FormControl>
-                            <RadioGroupItem value="rarely" />
+                            <RadioGroupItem value="rarely" id="rarely" />
                           </FormControl>
-                          <FormLabel className="font-normal">Rarely/Never</FormLabel>
+                          <FormLabel htmlFor="rarely" className="font-normal">Rarely/Never</FormLabel>
                         </FormItem>
                       </RadioGroup>
                     </FormControl>

@@ -1,6 +1,7 @@
 
 "use client";
 
+import { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Logo } from '../Logo';
 import { useAuth } from '@/hooks/use-auth';
@@ -14,6 +15,23 @@ type ConsentFormProps = {
 
 export default function ConsentForm({ onConsent, hasAlreadyConsented }: ConsentFormProps) {
   const { signOut } = useAuth();
+
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.src = 'https://form.jotform.com/jsform/252686065152156';
+    
+    const container = document.getElementById('jotform-container');
+    if (container) {
+        container.appendChild(script);
+    }
+
+    return () => {
+        if (container) {
+            container.innerHTML = '';
+        }
+    };
+  }, []);
 
   return (
     <Card className="w-full max-w-4xl shadow-xl flex flex-col h-[90vh]">
@@ -36,16 +54,7 @@ export default function ConsentForm({ onConsent, hasAlreadyConsented }: ConsentF
           </div>
         </CardHeader>
       <CardContent className="text-center flex-grow flex flex-col p-6">
-        <div className="flex-grow relative border rounded-lg overflow-hidden w-full">
-            <iframe
-              id="JotFormIFrame-252686065152156"
-              title="Online AI Tutoring Survey Parental Consent Form"
-              allow="geolocation; microphone; camera; fullscreen; payment"
-              src="https://form.jotform.com/252686065152156"
-              className="h-full w-full border-0"
-            >
-            </iframe>
-        </div>
+        <div id="jotform-container" className="flex-grow relative border rounded-lg overflow-hidden w-full" />
         <div className="mt-6 flex justify-center gap-4">
             <Button onClick={onConsent} className="w-full max-w-xs mx-auto">Done</Button>
             {hasAlreadyConsented && (
