@@ -16,3 +16,19 @@ export interface Message {
     D: string;
   };
 }
+
+export type SerializableMessage = Omit<Message, 'timestamp'> & {
+  timestamp: number;
+};
+
+export interface Report {
+  subject: string;
+  topics: string[];
+  goodAt: string[];
+  needsPractice: string[];
+  summary: string;
+}
+
+export interface ReportInput {
+  history: SerializableMessage[];
+}

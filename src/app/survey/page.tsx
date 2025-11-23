@@ -51,7 +51,7 @@ function SurveyContent() {
         endTime: serverTimestamp()
       });
       console.log("Post-chat survey submitted:", surveyResponse);
-      router.push('/thank-you');
+      router.push(`/thank-you?sessionId=${sessionId}`);
     } catch (error) {
       console.error("Error saving post-chat survey:", error);
       toast({ variant: "destructive", title: "Error", description: "Failed to submit survey. Please try again." });
